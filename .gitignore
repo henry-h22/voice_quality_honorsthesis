@@ -1,3 +1,9 @@
+# Data
+/egg_melt
+/egg_raw
+F2_tone_be=21_01.wav
+F2_tone_be21_01.wav
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
