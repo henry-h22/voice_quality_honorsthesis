@@ -14,6 +14,8 @@ def filepath(tableLine: pd.core.series.Series) -> str:
         filename = filename.replace("_Audio", "_ch1")
     if language == 'Yi' and variety == 'Village 1' and (filename[:3] in ['f1_', 'F2_', 'M1_']):
         filename = filename[:3] + 'tone_' + filename[3:]
+    if language == 'Luchun':
+        filename = filename.replace("x005F_", '')
 
     boCatch = ''
     if language == 'Bo': # this is because most of the Bo Village 1 files end in a random space
@@ -49,7 +51,8 @@ def random_test_file(df: pd.DataFrame) -> pd.core.series.Series:
 # - gujarati "Audio" -> ch1 (fixed!)
 # - also: gujarati M1 data is not here, the M1 folder just has M10 data but again. :(
 # - hmong "_Audio" -> ø (also pcxuirer womp)
-# - i dont remember if luchun has anything up (it doesn't)
+# - i dont remember if luchun has anything up (it doesn't) (well okay one minor thing)
 # - mandarin F5 is in '.egg' format. boooooo (they account for 6 datapoints, so dont worry)
+# - mandarin F42 is missing, but thats 4 rows so don't fret
 # - bo (end space!) FIXED
 # - yi (village split) FIXED
