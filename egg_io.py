@@ -40,11 +40,9 @@ def random_test_file(df: pd.DataFrame) -> pd.core.series.Series:
             filepath_ = filepath(row)
             if os.path.isfile(filepath_):
                 print(f'Found file after {attempts} attempts.')
-                return candidateRow
+                return row
             attempts += 1
 
-
-# TODO: GET A SENSE OF HOW MANY WAV FILES WE HAVE THAT DONT EXIST IN THE CSV, AND VICE VERSA
 # TODO: get hmong files to wav
 
 # list of anamolies:
