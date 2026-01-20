@@ -8,7 +8,7 @@ def filepath(tableLine: pd.core.series.Series) -> str:
     language = tableLine.language.item()
 
     # These are various catches!
-    boCatch = ' ' if language == "Bo" else '' # this is because the Bo files end in a random space
+    boCatch = ' ' if (language == 'Bo' and tableLine.language_variety.item() == 'Village 1') else '' # this is because the Bo Village 1 files end in a random space
     villageSplit = language in VILLAGE_SPLIT_LANGUAGES
     divider = f'/{tableLine.language_variety.item()}/' if villageSplit else '/'
 
@@ -34,7 +34,7 @@ def random_test_file(df: pd.DataFrame) -> pd.core.series.Series:
 # list of anamolies:
 # - gujarati "Audio" -> ch1
 # - hmong "_Audio" -> ø (also pcxuirer womp)
-# - i dont remember if luchun has anything up
-# - ^ same w mandarin
+# - i dont remember if luchun has anything up (it doesn't)
+# - mandarin F5 is in '.egg' format. boooooo
 # - bo (end space!) FIXED
 # - yi (village split) FIXED
