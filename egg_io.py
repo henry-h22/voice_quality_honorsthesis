@@ -5,14 +5,16 @@ VILLAGE_SPLIT_LANGUAGES = ['Yi', 'Bo']
 
 def filepath(tableLine: pd.core.series.Series) -> str:
     """Given a dataframe row, returns the filepath to the EGG file, as a string."""
-    language = tableLine.language.item()
+    language = tableLine['language']
+    variety = tableLine['language_variety']
+    filename = tableLine['filename']
 
     # These are various catches!
-    boCatch = ' ' if (language == 'Bo' and tableLine.language_variety.item() == 'Village 1') else '' # this is because the Bo Village 1 files end in a random space
+    boCatch = ' ' if (language == 'Bo' and variety == 'Village 1') else '' # this is because the Bo Village 1 files end in a random space
     villageSplit = language in VILLAGE_SPLIT_LANGUAGES
-    divider = f'/{tableLine.language_variety.item()}/' if villageSplit else '/'
+    divider = f'/{variety}/' if villageSplit else '/'
 
-    return f'egg_melt/{language}{divider}{tableLine.filename.item()}{boCatch}.wav'
+    return f'egg_melt/{language}{divider}{filename}{boCatch}.wav'
 
 
 def random_test_file(df: pd.DataFrame) -> pd.core.series.Series:
@@ -21,11 +23,12 @@ def random_test_file(df: pd.DataFrame) -> pd.core.series.Series:
     attempts = 0
     while True:
         candidateRow = df.sample(1)
-        filepath_ = filepath(candidateRow)
-        if os.path.isfile(filepath_):
-            print(f'Found file after {attempts} attempts.')
-            return candidateRow
-        attempts += 1
+        for _, row in candidateRow.iterrows():
+            filepath_ = filepath(row)
+            if os.path.isfile(filepath_):
+                print(f'Found file after {attempts} attempts.')
+                return candidateRow
+            attempts += 1
 
 
 # TODO: GET A SENSE OF HOW MANY WAV FILES WE HAVE THAT DONT EXIST IN THE CSV, AND VICE VERSA
