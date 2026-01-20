@@ -44,6 +44,6 @@ def random_test_file(df: pd.DataFrame) -> pd.core.series.Series:
 # - also: gujarati M1 data is not here, the M1 folder just has M10 data but again. :(
 # - hmong "_Audio" -> ø (also pcxuirer womp)
 # - i dont remember if luchun has anything up (it doesn't)
-# - mandarin F5 is in '.egg' format. boooooo
+# - mandarin F5 is in '.egg' format. boooooo (they account for 6 datapoints, so dont worry)
 # - bo (end space!) FIXED
 # - yi (village split) FIXED
