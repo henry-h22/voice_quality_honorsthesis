@@ -15,7 +15,13 @@ def filepath(tableLine: pd.core.series.Series) -> str:
     if language == 'Yi' and variety == 'Village 1' and (filename[:3] in ['f1_', 'F2_', 'M1_']):
         filename = filename[:3] + 'tone_' + filename[3:]
 
-    boCatch = ' ' if (language == 'Bo' and variety == 'Village 1') else '' # this is because the Bo Village 1 files end in a random space
+    boCatch = ''
+    if language == 'Bo': # this is because most of the Bo Village 1 files end in a random space
+        if variety == 'Village 1':
+            if tableLine['speaker_id'] != 'Bo_M2':
+                boCatch = ' '
+            
+    
     villageSplit = language in VILLAGE_SPLIT_LANGUAGES
     divider = f'/{variety}/' if villageSplit else '/'
 
