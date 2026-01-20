@@ -8,6 +8,7 @@ def filepath(tableLine: pd.core.series.Series) -> str:
     language = tableLine['language']
     variety = tableLine['language_variety']
     filename = tableLine['filename']
+    if language == 'Gujarati': filename = filename.replace("_Audio", "_ch1")
 
     # These are various catches!
     boCatch = ' ' if (language == 'Bo' and variety == 'Village 1') else '' # this is because the Bo Village 1 files end in a random space
@@ -35,7 +36,8 @@ def random_test_file(df: pd.DataFrame) -> pd.core.series.Series:
 # TODO: get hmong files to wav
 
 # list of anamolies:
-# - gujarati "Audio" -> ch1
+# - gujarati "Audio" -> ch1 (fixed!)
+# - also: gujarati M1 data is not here, the M1 folder just has M10 data but again. :(
 # - hmong "_Audio" -> ø (also pcxuirer womp)
 # - i dont remember if luchun has anything up (it doesn't)
 # - mandarin F5 is in '.egg' format. boooooo
