@@ -12,8 +12,8 @@ def filepath(tableLine: pd.core.series.Series) -> str:
     # These are various catches!
     if language == 'Gujarati': 
         filename = filename.replace("_Audio", "_ch1")
-    if language == 'Yi' and '_tone_' in filename:
-        filename = filename.replace("_tone_", '')
+    if language == 'Yi' and variety == 'Village 1' and (filename[:3] in ['f1_', 'F2_', 'M1_']):
+        filename = filename[:3] + 'tone_' + filename[3:]
 
     boCatch = ' ' if (language == 'Bo' and variety == 'Village 1') else '' # this is because the Bo Village 1 files end in a random space
     villageSplit = language in VILLAGE_SPLIT_LANGUAGES
