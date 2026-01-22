@@ -8,6 +8,8 @@ warnings.filterwarnings("ignore")
 all_data = pd.read_csv("voiceSauce.csv")
 TIMEPOINT = 4
 skips = 0
+egg_signals = []
+filename_headers = []
 
 for _, savedRow in all_data.iterrows():
     # if savedRow['language'] != 'Zapotec': continue
@@ -24,7 +26,6 @@ for _, savedRow in all_data.iterrows():
     peaks = pitchmark(egg, samplerate, savedRow.strF0)
     threshold = find_threshold(egg, peaks)
 
-    
     try:
         clipped_egg = clip_egg(egg, threshold, peaks)
         doubleThreshold = False
@@ -44,7 +45,11 @@ for _, savedRow in all_data.iterrows():
         print(f'AHHHHHH {filepath(savedRow)}')
         continue
 
-    plt.plot(final)
+    egg_signals.append(final)
+    filename_headers.append(savedRow['filename'])
+    exportToFDA(egg_signals, filename_headers)
+
+    # plt.plot(final)
 
 print(skips)
-plt.show()
+# plt.show()
