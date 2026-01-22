@@ -25,7 +25,13 @@ def pitchmark(egg: np.array, samplerate: int, F0: float) -> np.array:
 
 def find_threshold(egg: np.array, peaks) -> float:
     """Given the signal, and the peak locations (in samples), this function returns the 25% threshold that will be used."""
-    target_area = egg[peaks[1]:peaks[2]]
+    if len(peaks) < 3:
+        if len(peaks) > 1:
+            target_area = egg[peaks[0]:peaks[1]]
+        else:
+            target_area = egg
+    else:
+        target_area = egg[peaks[1]:peaks[2]]
     target_max = float(np.max(target_area))
     target_min = float(np.min(target_area))
     return target_min + ((target_max - target_min) / 4)
