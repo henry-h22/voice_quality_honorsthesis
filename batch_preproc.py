@@ -7,35 +7,44 @@ import warnings
 warnings.filterwarnings("ignore")
 all_data = pd.read_csv("voiceSauce.csv")
 TIMEPOINT = 4
+skips = 0
 
 for _, savedRow in all_data.iterrows():
-    if savedRow['language'] != 'Yi': continue
+    # if savedRow['language'] != 'Zapotec': continue
 
     try:
         samplerate, data = wavfile.read(filepath(savedRow))
     except FileNotFoundError:
-        # skips += 1
+        
         # print(filepath(savedRow))
         continue
     startSample, endSample = sampleEndpoints(savedRow.segment_start, savedRow.segment_end, samplerate, timepoint = TIMEPOINT)
     egg = data[startSample:endSample]
     
     peaks = pitchmark(egg, samplerate, savedRow.strF0)
+    threshold = find_threshold(egg, peaks)
 
+    
     try:
-        threshold = find_threshold(egg, peaks)
-    except IndexError:
-        print(f'file {filepath(savedRow)} fucked up')
+        clipped_egg = clip_egg(egg, threshold, peaks)
+        doubleThreshold = False
+    except ValueError:
+        # skips += 1
+        print(f'File {filepath(savedRow)} chose too low of a threshold. Womp!')
         continue
-
-    try:
-        clipped_egg = clip_egg(egg, threshold, peaks[0])
-    except IndexError:
-        print(f'file {filepath(savedRow)} fucked up')
+    except Exception:
+        # skips += 1
+        print(f'idek what {filepath(savedRow)} did wrong :/')
         continue
 
     final = normalize_egg(clipped_egg)
 
+    if final[92] > 0.5 or final[550] > 0.75:
+        skips += 1
+        print(f'AHHHHHH {filepath(savedRow)}')
+        continue
+
     plt.plot(final)
 
+print(skips)
 plt.show()
