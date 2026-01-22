@@ -47,9 +47,8 @@ for _, savedRow in all_data.iterrows():
 
     egg_signals.append(final)
     filename_headers.append(savedRow['filename'])
-    exportToFDA(egg_signals, filename_headers)
-
     # plt.plot(final)
 
 print(skips)
+exportToFDA(egg_signals, filename_headers)
 # plt.show()
