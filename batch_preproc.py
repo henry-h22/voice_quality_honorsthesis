@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import warnings
 warnings.filterwarnings("ignore")
 all_data = pd.read_csv("voiceSauce.csv")
-TIMEPOINT = 5
+TIMEPOINT = 4
 
 for _, savedRow in all_data.iterrows():
     if savedRow['language'] != 'Yi': continue

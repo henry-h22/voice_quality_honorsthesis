@@ -9,7 +9,7 @@ def sampleEndpoints(startTime: float, endTime: float, samplerate: int, timepoint
     if timepoint >= 9:
         targetTimepointEnd = endTime
     else:
-        targetTimepointEnd = startTime + ((endTime - startTime) / 9) * (timepoint + 2)
+        targetTimepointEnd = startTime + ((endTime - startTime) / 9) * (timepoint + 3)
     if full_vowel_override:
         targetTimepointStart = startTime
         targetTimepointEnd = endTime
