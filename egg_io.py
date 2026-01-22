@@ -30,7 +30,7 @@ def filepath(tableLine: pd.core.series.Series) -> str:
     return f'egg_melt/{language}{divider}{filename}{boCatch}.wav'
 
 
-def random_test_file(df: pd.DataFrame) -> pd.core.series.Series:
+def random_test_file(df: pd.DataFrame, filterLanguage: str = '/') -> pd.core.series.Series:
     """Grabs a random filepath that we definitely have as both a wav and in the csv. \\
     Returns the dataframe row, as we need that!"""
     attempts = 0
@@ -38,7 +38,7 @@ def random_test_file(df: pd.DataFrame) -> pd.core.series.Series:
         candidateRow = df.sample(1)
         for _, row in candidateRow.iterrows():
             filepath_ = filepath(row)
-            if os.path.isfile(filepath_):
+            if os.path.isfile(filepath_) and filterLanguage in filepath_:
                 print(f'Found file after {attempts} attempts.')
                 return row
             attempts += 1
