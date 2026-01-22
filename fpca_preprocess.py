@@ -31,8 +31,38 @@ def find_threshold(egg: np.array, peaks) -> float:
     return target_min + ((target_max - target_min) / 4)
 
 
-def clip_egg(egg: np.array, threshold: float, first_peak: int) -> np.array:
-    """This function uses the threshold to give us JUST the portion of the signal we need for further analysis. Needs the sample location of the first peak (peaks[0]) just to be safe."""
+def clip_egg(egg: np.array, threshold: float, peaks: list[int]) -> np.array:
+    """This function uses the threshold to give us JUST the portion of the signal we need for further analysis. Needs the sample location of the peaks just to be safe."""
+    crosses = get_crosses(egg, threshold)
+    if len(peaks) == 2:
+        return egg[crosses[0]:crosses[-1]]
+    
+    # Find first cross following first peak:
+    following_first_peak = [sample for sample in crosses if (sample > peaks[0] and sample < peaks[1])]
+    beginning = min(following_first_peak)
+
+    # Find the first cross following the third peak:
+    following_third_peak = [sample for sample in crosses if (sample > peaks[2])]
+    end = min(following_third_peak)
+
+    return egg[beginning:end]
+
+
+def get_crosses(egg: np.array, threshold: float) -> list[int]:
+    samples_above_threshold = set(np.argwhere(egg >= threshold).flatten())
+    crosses = []
+    for i in range(1, len(egg)):
+        if (i - 1 in samples_above_threshold) != (i in samples_above_threshold):
+            crosses.append(i)
+    return crosses
+
+def clip_2_peaks_catch(egg: np.array, peaks: list[int], crosses: list[int]) -> np.array:
+    return 
+
+
+def clip_egg_old(egg: np.array, threshold: float, first_peak: int) -> np.array:
+    """DEPRECATED! Use clip_egg!! \\
+    This function uses the threshold to give us JUST the portion of the signal we need for further analysis. Needs the sample location of the first peak (peaks[0]) just to be safe."""
     rounded_off = egg[first_peak:]
     above_threshold = set(np.argwhere(rounded_off >= threshold).flatten())
 
