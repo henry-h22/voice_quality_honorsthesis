@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import os.path
 
 VILLAGE_SPLIT_LANGUAGES = ['Yi', 'Bo']
@@ -59,3 +60,9 @@ def grabSpecificFile(df: pd.DataFrame, file: str) -> pd.core.series.Series:
 # - mandarin F42 is missing, but thats 4 rows so don't fret
 # - bo (end space!) FIXED
 # - yi (village split) FIXED
+
+
+def exportToFDA(egg_signals: list[np.array], filename_headers: list[str]):
+    data_matrix = np.vstack(egg_signals).T
+    data_frame = pd.DataFrame(data_matrix, columns = filename_headers)
+    data_frame.to_csv("egg_pulses", index = False)
