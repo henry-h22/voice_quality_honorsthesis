@@ -43,6 +43,11 @@ def random_test_file(df: pd.DataFrame, filterLanguage: str = '/') -> pd.core.ser
                 return row
             attempts += 1
 
+def grabSpecificFile(df: pd.DataFrame, file: str) -> pd.core.series.Series:
+    for _, row in df.iterrows():
+        if filepath(row) == file:
+            return row
+
 # TODO: get hmong files to wav
 
 # list of anamolies:
