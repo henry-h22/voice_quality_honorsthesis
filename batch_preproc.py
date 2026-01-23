@@ -13,7 +13,7 @@ filename_headers = []
 VERBOSE = False
 
 for _, savedRow in all_data.iterrows():
-    if savedRow['language'] != 'Zapotec': continue
+    # if savedRow['language'] != 'Zapotec': continue
 
     try:
         samplerate, data = wavfile.read(filepath(savedRow))
@@ -23,7 +23,7 @@ for _, savedRow in all_data.iterrows():
         continue
     startSample, endSample = sampleEndpoints(savedRow.segment_start, savedRow.segment_end, samplerate, timepoint = TIMEPOINT)
     egg = data[startSample:endSample]
-    egg = lowpass(egg, samplerate, 422)
+    egg = lowpass(egg, samplerate, 722)
     
     peaks = pitchmark(egg, samplerate, savedRow.strF0)
     threshold = find_threshold(egg, peaks)
@@ -47,13 +47,13 @@ for _, savedRow in all_data.iterrows():
         if VERBOSE: print(f'AHHHHHH {filepath(savedRow)}')
         continue
 
-    # egg_signals.append(final)
-    # filename_headers.append(savedRow['filename'])
-    plt.plot(final)
+    egg_signals.append(final)
+    filename_headers.append(savedRow['filename'])
+    # plt.plot(final)
 
 print(skips)
-# exportToFDA(egg_signals, filename_headers)
-plt.show()
+exportToFDA(egg_signals, filename_headers)
+# plt.show()
 
 
 
