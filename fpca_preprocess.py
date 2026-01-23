@@ -95,3 +95,9 @@ def normalize_egg(egg: np.array) -> np.array:
     """This function performs the amplitude- and time- normalization steps."""
     return time_normalize(amp_normalize(egg))
 
+
+def lowpass(egg: np.array, samplerate: int, cutoff: int = 600) -> np.array:
+    """Applies a lowpass filter, default cutoff 600 Hz"""
+    sos = signal.cheby2(2, 22, cutoff, 'lp', fs=samplerate, output='sos')
+    filtered_signal = signal.sosfilt(sos, egg)
+    return filtered_signal
