@@ -10,6 +10,7 @@ TIMEPOINT = 4
 skips = 0
 egg_signals = []
 filename_headers = []
+VERBOSE = True
 
 for _, savedRow in all_data.iterrows():
     # if savedRow['language'] != 'Zapotec': continue
@@ -30,19 +31,19 @@ for _, savedRow in all_data.iterrows():
         clipped_egg = clip_egg(egg, threshold, peaks)
         doubleThreshold = False
     except ValueError:
-        # skips += 1
-        print(f'File {filepath(savedRow)} chose too low of a threshold. Womp!')
+        skips += 1
+        if VERBOSE: print(f'File {filepath(savedRow)} chose too low of a threshold. Womp!')
         continue
     except Exception:
-        # skips += 1
-        print(f'idek what {filepath(savedRow)} did wrong :/')
+        skips -= 1000
+        if VERBOSE: print(f'idek what {filepath(savedRow)} did wrong :/')
         continue
 
     final = normalize_egg(clipped_egg)
 
     if final[92] > 0.5 or final[550] > 0.75:
         skips += 1
-        print(f'AHHHHHH {filepath(savedRow)}')
+        if VERBOSE: print(f'AHHHHHH {filepath(savedRow)}')
         continue
 
     egg_signals.append(final)
