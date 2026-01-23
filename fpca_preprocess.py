@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.signal import find_peaks
+from scipy import signal
 
 def sampleEndpoints(startTime: float, endTime: float, samplerate: int, timepoint: int = 5, full_vowel_override = False) -> int:
     """Given the start and end time in ms of the sound in question, as well as the sample rate, \\
@@ -19,7 +19,7 @@ def sampleEndpoints(startTime: float, endTime: float, samplerate: int, timepoint
 def pitchmark(egg: np.array, samplerate: int, F0: float) -> np.array:
     """This function is used to find the peaks in the egg signal. We need sample rate and F0 to make sure we don't double count!"""
     distance = int(0.7 * samplerate / F0)
-    peaks, _ = find_peaks(egg, distance = distance)
+    peaks, _ = signal.find_peaks(egg, distance = distance)
     return peaks
 
 
