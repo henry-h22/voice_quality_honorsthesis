@@ -1,0 +1,55 @@
+---
+title: "second_foray (lowpass!)"
+author: "hssh"
+format: html
+---
+
+```{r}
+#| include: false
+library(tidyverse)
+library(fda)
+```
+
+```{r}
+preprocessed_data <- read.csv("egg_pulses_lowpass.csv", header = TRUE, check.names = FALSE)
+y_matrix <- as.matrix(preprocessed_data)
+filenames <- colnames(y_matrix)
+
+time <- seq(0, 1, length.out = nrow(y_matrix))
+fourierBasis <- create.fourier.basis(c(0, 1), nbasis = 200)
+
+my_fd <- Data2fd(
+  argvals = time, 
+  y = y_matrix, 
+  basisobj = fourierBasis,
+  fdnames = list("Time", "Filename" = filenames, "Value"),
+  lambda = 10E-12
+)
+```
+
+```{r}
+pca_results <- pca.fd(my_fd, nharm = 200)
+
+# View the PCA scores for the first 5 subjects
+head(pca_results$scores, 1) 
+```
+
+```{r}
+plot(my_fd)
+```
+
+```{r}
+# plot.pca.fd(pca_results, harm = seq(1:10))
+plot.pca.fd(pca_results, harm = seq(1:4))
+```
+
+```{r}
+scores <- as.data.frame(pca_results$scores) %>% dplyr::select(1:4)
+filename <- t(t(as.matrix(filenames)))
+scores <- cbind(filename, scores)
+```
+
+```{r}
+# all_data <- read.csv("voiceSauce.csv", header = TRUE) %>% left_join(scores, by = filename)
+```
+

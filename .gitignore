@@ -4,6 +4,13 @@
 /preprocessing/F2_tone_be=21_01.wav
 /preprocessing/F2_tone_be21_01.wav
 
+# R things
+.RData
+.Rhistory
+.Rproj.user
+FPCA_R/FPCA_R.Rproj
+FPCA_R/gaitExample.r
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
@@ -211,4 +218,5 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
 .DS_Store
