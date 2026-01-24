@@ -1,8 +1,8 @@
 # Data
-/egg_melt
-/egg_raw
-F2_tone_be=21_01.wav
-F2_tone_be21_01.wav
+/preprocessing/egg_melt
+/preprocessing/egg_raw
+/preprocessing/F2_tone_be=21_01.wav
+/preprocessing/F2_tone_be21_01.wav
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
