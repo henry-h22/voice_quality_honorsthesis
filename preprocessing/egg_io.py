@@ -49,6 +49,13 @@ def grabSpecificFile(df: pd.DataFrame, file: str) -> pd.core.series.Series:
         if filepath(row) == file:
             return row
 
+
+def exportToFDA(egg_signals: list[np.array], filename_headers: list[str], dfList: list[pd.core.series.Series]):
+    data_matrix = np.vstack(egg_signals).T
+    pd.DataFrame(data_matrix, columns = filename_headers).to_csv("egg_pulses.csv", index = False)
+    pd.DataFrame(dfList).to_csv('voiceSauce_idd.csv', index = False)
+
+
 # TODO: get hmong files to wav
 
 # list of anamolies:
@@ -60,9 +67,3 @@ def grabSpecificFile(df: pd.DataFrame, file: str) -> pd.core.series.Series:
 # - mandarin F42 is missing, but thats 4 rows so don't fret
 # - bo (end space!) FIXED
 # - yi (village split) FIXED
-
-
-def exportToFDA(egg_signals: list[np.array], filename_headers: list[str]):
-    data_matrix = np.vstack(egg_signals).T
-    data_frame = pd.DataFrame(data_matrix, columns = filename_headers)
-    data_frame.to_csv("egg_pulses", index = False)

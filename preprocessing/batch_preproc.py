@@ -7,9 +7,11 @@ import warnings
 warnings.filterwarnings("ignore")
 all_data = pd.read_csv("voiceSauce.csv")
 TIMEPOINT = 4
+
 skips = 0
 egg_signals = []
-filename_headers = []
+egg_ids = []
+newVoiceSauceDataFrame = []
 VERBOSE = False
 
 for _, savedRow in all_data.iterrows():
@@ -18,7 +20,6 @@ for _, savedRow in all_data.iterrows():
     try:
         samplerate, data = wavfile.read(filepath(savedRow))
     except FileNotFoundError:
-        
         # print(filepath(savedRow))
         continue
     startSample, endSample = sampleEndpoints(savedRow.segment_start, savedRow.segment_end, samplerate, timepoint = TIMEPOINT)
@@ -36,7 +37,7 @@ for _, savedRow in all_data.iterrows():
         if VERBOSE: print(f'File {filepath(savedRow)} chose too low of a threshold. Womp!')
         continue
     except Exception:
-        skips -= 1000
+        skips -= 1000 # this case hasn't been happening (hooray!)
         if VERBOSE: print(f'idek what {filepath(savedRow)} did wrong :/')
         continue
 
@@ -48,13 +49,15 @@ for _, savedRow in all_data.iterrows():
         continue
 
     egg_signals.append(final)
-    filename_headers.append(savedRow['filename'])
+    token_id = hash(savedRow['speaker_id'] + str(savedRow['CPP']))
+    egg_ids.append(token_id)
+    savedRow['token_id'] = token_id
+    newVoiceSauceDataFrame.append(savedRow)
     # plt.plot(final)
 
 print(skips)
-exportToFDA(egg_signals, filename_headers)
+exportToFDA(egg_signals, egg_ids, newVoiceSauceDataFrame)
 # plt.show()
-
 
 
 # notes:
