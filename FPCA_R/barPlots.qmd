@@ -1,0 +1,116 @@
+---
+title: "barPLots"
+format: html
+---
+
+Run second_foray_lowpass first
+
+```{r}
+#| include: false
+library(tidyverse)
+library(tidymodels)
+```
+
+```{r}
+all_data <- all_data %>% 
+  mutate(
+    tone_contour = as.factor(tone_contour)
+  )
+```
+
+
+```{r}
+jjSplit <- all_data %>% 
+  mutate(
+    jj = case_when(
+      language == "Yi" ~ TRUE,
+      language == "Bo" ~ TRUE,
+      language == "Luchun" ~ TRUE,
+      .default = FALSE
+    )
+  )
+```
+
+
+This is just trying to get the same stuff as the JJ paper. We are seeing very similar behavior with our V1 as their PC1, but not really after that.
+```{r}
+all_data %>% 
+  filter(language == "Yi" | language == "Bo" | language == "Luchun") %>% 
+  ggplot(aes(x = phonation, y = V2)) +
+  stat_summary(fun = "mean", geom = "bar", fill = "skyblue", color = "black") +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1),
+               geom = "errorbar", width = 0.2)
+```
+
+```{r}
+jjSplit %>% 
+  ggplot(aes(x = jj, y = V2)) +
+  stat_summary(fun = "mean", geom = "bar", fill = "skyblue", color = "black") +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1),
+               geom = "errorbar", width = 0.2)
+# check if above is stat. sig.
+jjSplitCraszy <- lmspec %>% 
+  fit(V2 ~ jj, data = jjSplit)
+jjSplitCraszy %>% 
+  tidy()
+
+
+jjSplit %>% 
+  ggplot(aes(x = jj, y = V2)) +
+  geom_boxplot()
+```
+
+This cell provides statistically significant evidence that V2 is a terrible predictor of whether or not a language is studied in the source paper. OR, a really good one! Hard to say. The next cell compares with the other Vs
+```{r}
+jjV2 <- glm(jj ~ V2, family = "binomial", data = jjSplit)
+summary(jjV2)
+exp(4.55208)
+```
+
+
+```{r}
+jjV2 <- glm(jj ~ V1, family = "binomial", data = jjSplit)
+summary(jjV2)
+exp(1.37210) / (exp(1.37210) + 1)
+```
+
+
+
+What's Miao up to? (we don't have hmong)
+```{r}
+all_data %>% 
+  filter(language == "Miao") %>% 
+  ggplot(aes(x = phonation, y = V3, color = tone_contour)) +
+  geom_boxplot()
+
+all_data %>% 
+  filter(language == "Miao") %>% 
+  ggplot(aes(x = V3, color = phonation)) +
+  geom_density()
+```
+
+Tbh, we should make a barplot of Vx for phonation by language, mirroring our plots from earlier.
+```{r}
+all_data %>% 
+  ggplot(aes(x = V1, color = phonation)) +
+  geom_boxplot() +
+  facet_wrap(~language)
+
+all_data %>% 
+  ggplot(aes(x = V2, color = phonation)) +
+  geom_boxplot() +
+  facet_wrap(~language)
+
+all_data %>% 
+  ggplot(aes(x = V3, color = phonation)) +
+  geom_boxplot() +
+  facet_wrap(~language)
+
+all_data %>% 
+  ggplot(aes(x = V4, color = phonation)) +
+  geom_boxplot() +
+  facet_wrap(~language)
+```
+
+
+

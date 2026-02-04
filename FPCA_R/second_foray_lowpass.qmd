@@ -4,6 +4,9 @@ author: "hssh"
 format: html
 ---
 
+Hey!!!!
+Decompose this into R scripts, only using qmd for visualizations! Please!!
+
 ```{r}
 #| include: false
 library(tidyverse)
@@ -11,31 +14,28 @@ library(fda)
 ```
 
 ```{r}
-preprocessed_data <- read.csv("egg_pulses_lowpass.csv", header = TRUE, check.names = FALSE)
-y_matrix <- as.matrix(preprocessed_data)
-filenames <- colnames(y_matrix)
+pulses <- read.csv("egg_pulses.csv", header = TRUE, check.names = FALSE)
+pulses_matrix <- as.matrix(pulses)
+ids <- colnames(pulses_matrix)
 
-time <- seq(0, 1, length.out = nrow(y_matrix))
+time <- seq(0, 1, length.out = nrow(pulses_matrix))
 fourierBasis <- create.fourier.basis(c(0, 1), nbasis = 200)
 
-my_fd <- Data2fd(
+functional_data_pulses <- Data2fd(
   argvals = time, 
-  y = y_matrix, 
+  y = pulses_matrix, 
   basisobj = fourierBasis,
-  fdnames = list("Time", "Filename" = filenames, "Value"),
+  fdnames = list("Time", "token_id" = ids, "Value"),
   lambda = 10E-12
 )
 ```
 
 ```{r}
-pca_results <- pca.fd(my_fd, nharm = 200)
-
-# View the PCA scores for the first 5 subjects
-head(pca_results$scores, 1) 
+pca_results <- pca.fd(functional_data_pulses, nharm = 200)
 ```
 
 ```{r}
-plot(my_fd)
+plot(functional_data_pulses)
 ```
 
 ```{r}
@@ -44,12 +44,99 @@ plot.pca.fd(pca_results, harm = seq(1:4))
 ```
 
 ```{r}
-scores <- as.data.frame(pca_results$scores) %>% dplyr::select(1:4)
-filename <- t(t(as.matrix(filenames)))
-scores <- cbind(filename, scores)
+scores <- as.data.frame(pca_results$scores) %>%
+  dplyr::select(1:4)
 ```
 
 ```{r}
-# all_data <- read.csv("voiceSauce.csv", header = TRUE) %>% left_join(scores, by = filename)
+all_data <- cbind(read_csv("voiceSauce_idd.csv"), scores)
 ```
+
+```{r}
+summary(all_data$V1)
+sd(all_data$V1)
+```
+
+```{r}
+all_data %>% 
+  ggplot(aes(y = LPhon, fill = phonation)) +
+  geom_bar()
+```
+
+
+```{r}
+all_data %>% 
+  ggplot(aes(y = V1, color = LPhon)) +
+  geom_boxplot()
+V1_phonation_lm <- lm(V1 ~ phonation + language, data = all_data, na.action = na.exclude)
+summary(V1_phonation_lm)
+```
+
+```{r}
+all_data %>% 
+  ggplot(aes(y = V2, color = phonation)) +
+  geom_boxplot()
+all_data %>% 
+  ggplot(aes(y = V2, color = language)) +
+  geom_boxplot()
+```
+
+```{r}
+all_data %>% 
+  ggplot(aes(y = V3, color = phonation)) +
+  geom_boxplot()
+all_data %>% 
+  ggplot(aes(y = V3, color = language)) +
+  geom_boxplot()
+```
+
+
+```{r}
+all_data %>% 
+  ggplot(aes(y = V4, color = phonation)) +
+  geom_boxplot()
+all_data %>% 
+  ggplot(aes(y = V4, color = language)) +
+  geom_boxplot()
+```
+
+```{r}
+all_data %>% 
+  ggplot(aes(x = V2, y = V3, color = phonation)) +
+  geom_point()
+all_data %>% 
+  ggplot(aes(x = V2, y = V3, color = language)) +
+  geom_point()
+```
+
+```{r}
+all_data %>% 
+  ggplot(aes(x = V1, y = CQ_H)) +
+  geom_point(color = 'brown4') +
+  geom_smooth(method = "lm", color = 'skyblue3')
+all_data %>% 
+  ggplot(aes(x = V1, y = CQ_H)) +
+  geom_point(color = 'brown4', size = 0.67) +
+  facet_wrap(~ phonation) +
+  geom_smooth(method = 'lm', color = 'skyblue')
+```
+
+```{r}
+all_data %>% 
+  ggplot(aes(x = V4, y = strF0, color = phonation)) +
+  geom_point() + 
+  facet_wrap(~ language)
+```
+
+
+
+
+```{r}
+all_data %>% 
+  ggplot(aes(x = strF0, y = V2, color = speaker_sex)) +
+  geom_point()
+phonLM <- lm(V2 ~ speaker_sex + strF0, data = all_data, na.action = na.exclude)
+summary(phonLM)
+```
+
 

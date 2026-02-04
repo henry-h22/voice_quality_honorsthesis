@@ -1,0 +1,58 @@
+---
+title: "quant-cat correlation table 3"
+format: html
+---
+run everything in second foray lol!!!
+```{r}
+#| include: false
+library(lsr)
+library(tidymodels)
+lmspec <- linear_reg() %>% 
+  set_mode("regression") %>% 
+  set_engine("lm")
+```
+
+```{r}
+# Correlation with other quantitative things!
+cor(all_data$V4, all_data$peak_Vel)
+cor(all_data$V2, all_data$peak_Vel, use = "na.or.complete") 
+# V2 isn't doing great compared to anything?? Maybe it's language???
+cor(all_data$V4, all_data$SQ4_SQ3, use = "na.or.complete") # HOLY SHIT THATS 0.435?!
+```
+
+```{r}
+etaCorrRow <- function(catVar) {
+  tibble(
+    c(
+      sqrt(etaSquared(aov(V1 ~ catVar, data = all_data))[,1]),
+      sqrt(etaSquared(aov(V2 ~ catVar, data = all_data))[,1]),
+      sqrt(etaSquared(aov(V3 ~ catVar, data = all_data))[,1]),
+      sqrt(etaSquared(aov(V4 ~ catVar, data = all_data))[,1])
+    ))
+}
+corrRow <- function(quantVar) {
+  tibble(c(
+    cor(all_data$V1, quantVar, use = "na.or.complete"),
+    cor(all_data$V2, quantVar, use = "na.or.complete"),
+    cor(all_data$V3, quantVar, use = "na.or.complete"),
+    cor(all_data$V4, quantVar, use = "na.or.complete")
+  ))
+}
+etaCorrRow(all_data$speaker_sex)
+```
+```{r}
+corrRow(all_data$CPP)
+# TODO: split this stuff up by language? maybe there's something there???
+```
+
+
+
+# this is table 5 stuff
+
+```{r}
+h1h2model <- lmspec %>% 
+  fit(H1H2c ~ CQ_H + peak_Vel + min_Vel + SQ + SQ4_SQ3 + SQ2_SQ1, data = all_data)
+
+h1h2model %>% tidy()
+```
+
