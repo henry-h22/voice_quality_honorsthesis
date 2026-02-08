@@ -50,10 +50,11 @@ def grabSpecificFile(df: pd.DataFrame, file: str) -> pd.core.series.Series:
             return row
 
 
-def exportToFDA(egg_signals: list[np.array], filename_headers: list[str], dfList: list[pd.core.series.Series]):
+def exportToFDA(egg_signals: list[np.array], filename_headers: list[str], dfList: list[pd.core.series.Series], language: str = 'none'):
     data_matrix = np.vstack(egg_signals).T
-    pd.DataFrame(data_matrix, columns = filename_headers).to_csv("egg_pulses.csv", index = False)
-    pd.DataFrame(dfList).to_csv('voiceSauce_idd.csv', index = False)
+    path_addon = '' if language == 'none' else f'by_lang/{language}_'
+    pd.DataFrame(data_matrix, columns = filename_headers).to_csv(f"{path_addon}egg_pulses.csv", index = False)
+    pd.DataFrame(dfList).to_csv(f'{path_addon}voiceSauce_idd.csv', index = False)
 
 
 # TODO: get hmong files to wav
