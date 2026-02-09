@@ -4,23 +4,32 @@ from egg_io import *
 from fpca_preprocess import *
 import matplotlib.pyplot as plt
 import warnings
+from soundfile import LibsndfileError
 warnings.filterwarnings("ignore")
 all_data = pd.read_csv("voiceSauce.csv")
-TIMEPOINT = 4
+TIMEPOINT = 5 # hey Hmong wants 5 but some languages may be better off with 4? unsure
 
 skips = 0
 egg_signals = []
 egg_ids = []
 newVoiceSauceDataFrame = []
-VERBOSE = False
+VERBOSE = True
+language = 'Hmong'
 
 for _, row in all_data.iterrows():
-    # if savedRow['language'] != 'Zapotec': continue
+    if row['language'] != 'Hmong': continue
 
     try:
         egg, samplerate = loadFile(row, TIMEPOINT)
     except FileNotFoundError:
         # print(filepath(savedRow))
+        continue
+    except LibsndfileError:
+        print(filepath(row))
+        continue
+
+    if len(egg) < 1000:
+        skips += 10000
         continue
 
     egg = lowpass(egg, samplerate, 722)
@@ -54,7 +63,7 @@ for _, row in all_data.iterrows():
     # plt.plot(final)
 
 print(skips)
-exportToFDA(egg_signals, egg_ids, newVoiceSauceDataFrame)
+exportToFDA(egg_signals, egg_ids, newVoiceSauceDataFrame, language = language)
 # plt.show()
 
 
@@ -68,3 +77,7 @@ exportToFDA(egg_signals, egg_ids, newVoiceSauceDataFrame)
 # Miao: we lose 1 with the addition of 722 cutoff lowpass-- small price to pay for much smoother lines. slay
 # Yi: Looks much better with the 722 cutoff lowpass, and we only lose one, which looked bad anyway.
 # Zapotec: 8 with 722, 10 with 522, 18 without. we're just doing 722 on all of them, final answer
+
+# TODO: Hmong fixes:
+# We have Hmong stuff now! Exciting! Apparently 88 of the Hmong files have skips, turn Verbose on to check
+# also 96 of them end up too short?? unsure what thats about, could look into it
