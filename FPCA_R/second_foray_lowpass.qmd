@@ -101,6 +101,20 @@ all_data %>%
 ```
 
 ```{r}
+# IN GUJARATI: V2 is kinda CPP?? / HNR?
+# (that is also true of Zapotec! similar corr value of around 0.3222)
+all_data %>% 
+  ggplot(aes(y = V2, x = CPP)) +
+  geom_point() +
+  geom_smooth(method = "lm")
+  # facet_wrap(~ vowel_quality)
+cor(all_data$V2, all_data$CPP)
+modell <- lm(CPP ~ V2, data = all_data)
+summary(modell)
+```
+
+
+```{r}
 all_data %>% 
   ggplot(aes(x = V2, y = V3, color = phonation)) +
   geom_point()
@@ -117,9 +131,22 @@ all_data %>%
 all_data %>% 
   ggplot(aes(x = V1, y = CQ_H)) +
   geom_point(color = 'brown4', size = 0.67) +
-  facet_wrap(~ phonation) +
+  facet_wrap(~ language) +
   geom_smooth(method = 'lm', color = 'skyblue')
 ```
+
+```{r}
+all_data %>% 
+  ggplot(aes(x = V1, y = H1c)) +
+  geom_point(color = 'darkorange4') +
+  geom_smooth(method = "lm", color = 'skyblue3')
+all_data %>% 
+  ggplot(aes(x = V1, y = H1c, color = phonation)) +
+  geom_point(size = 0.67) +
+  facet_wrap(~ language) +
+  geom_smooth(method = 'lm', color = 'skyblue')
+```
+
 
 ```{r}
 all_data %>% 
@@ -133,9 +160,9 @@ all_data %>%
 
 ```{r}
 all_data %>% 
-  ggplot(aes(x = strF0, y = V2, color = speaker_sex)) +
+  ggplot(aes(x = strF0, y = V4, color = speaker_sex)) +
   geom_point()
-phonLM <- lm(V2 ~ speaker_sex + strF0, data = all_data, na.action = na.exclude)
+phonLM <- lm(V4 ~ speaker_sex + strF0, data = all_data, na.action = na.exclude)
 summary(phonLM)
 ```
 

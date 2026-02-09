@@ -12,6 +12,13 @@ library(tidymodels)
 ```
 
 ```{r}
+all_data %>% 
+  ggplot(aes(x = language)) +
+  geom_bar()
+```
+
+
+```{r}
 all_data <- all_data %>% 
   mutate(
     tone_contour = as.factor(tone_contour)

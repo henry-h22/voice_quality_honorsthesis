@@ -45,6 +45,28 @@ corrRow(all_data$CPP)
 # TODO: split this stuff up by language? maybe there's something there???
 ```
 
+```{r}
+corrRowLanguage <- function(lang) {
+  tempLangFilter <- all_data %>% 
+    filter(language == lang)
+  print(tibble(c(
+    cor(tempLangFilter$V1, tempLangFilter$H1c, use = "na.or.complete"),
+    cor(tempLangFilter$V2, tempLangFilter$H1c, use = "na.or.complete"),
+    cor(tempLangFilter$V3, tempLangFilter$H1c, use = "na.or.complete"),
+    cor(tempLangFilter$V4, tempLangFilter$H1c, use = "na.or.complete")
+  )))
+  rm(tempLangFilter)
+}
+```
+
+```{r}
+# Bo	Gujarati	Luchun	Mandarin	Miao	Yi	Zapotec
+for (language in c("Bo", "Gujarati", "Luchun", "Mandarin", "Miao", "Yi", "Zapotec")) {
+  corrRowLanguage(language)
+}
+
+```
+
 
 
 # this is table 5 stuff
