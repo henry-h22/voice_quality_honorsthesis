@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import os.path
 from scipy.io import wavfile
+import soundfile as sf
 from fpca_preprocess import sampleEndpoints
 
 VILLAGE_SPLIT_LANGUAGES = ['Yi', 'Bo']
@@ -10,12 +11,19 @@ def loadFile(tableLine: pd.core.series.Series, timepoint: int) -> tuple[np.array
     """This function takes in a dataframe row, and returns the key area of the signal."""
     filepath_string = filepath(tableLine)
     if filepath_string[-3:] == 'pmf':
-        # TODO hmong stuff here
-        return
+        # the Hmong files are stored as .pmf files, which take a bit of extra wrangling
+        samplerate = 20000
+        raw_data, _ = sf.read(
+            filepath_string, channels = 1, samplerate = samplerate, dtype = 'float32', 
+            format = 'RAW', subtype = 'FLOAT', endian = 'LITTLE'
+        )
+        egg_start_sample = max(np.argmax(raw_data[1000:]), np.argmin(raw_data[1000:])) + 1000
+        data = raw_data[egg_start_sample:]
+    else:
+        samplerate, data = wavfile.read(filepath_string)
     
-    # implied else, non-hmong work happens here:
-    samplerate, data = wavfile.read(filepath_string)
     startSample, endSample = sampleEndpoints(tableLine['segment_start'], tableLine['segment_end'], samplerate, timepoint = timepoint)
+    
     return data[startSample:endSample], samplerate
 
 
