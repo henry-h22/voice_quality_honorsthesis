@@ -1,8 +1,23 @@
 import pandas as pd
 import numpy as np
 import os.path
+from scipy.io import wavfile
+from fpca_preprocess import sampleEndpoints
 
 VILLAGE_SPLIT_LANGUAGES = ['Yi', 'Bo']
+
+def loadFile(tableLine: pd.core.series.Series, timepoint: int) -> tuple[np.array, int]:
+    """This function takes in a dataframe row, and returns the key area of the signal."""
+    filepath_string = filepath(tableLine)
+    if filepath_string[-3:] == 'pmf':
+        # TODO hmong stuff here
+        return
+    
+    # implied else, non-hmong work happens here:
+    samplerate, data = wavfile.read(filepath_string)
+    startSample, endSample = sampleEndpoints(tableLine['segment_start'], tableLine['segment_end'], samplerate, timepoint = timepoint)
+    return data[startSample:endSample], samplerate
+
 
 def filepath(tableLine: pd.core.series.Series) -> str:
     """Given a dataframe row, returns the filepath to the EGG file, as a string."""
@@ -48,6 +63,7 @@ def random_test_file(df: pd.DataFrame, filterLanguage: str = '/') -> pd.core.ser
                 return row
             attempts += 1
 
+
 def grabSpecificFile(df: pd.DataFrame, file: str) -> pd.core.series.Series:
     for _, row in df.iterrows():
         if filepath(row) == file:
@@ -61,12 +77,10 @@ def exportToFDA(egg_signals: list[np.array], filename_headers: list[str], dfList
     pd.DataFrame(dfList).to_csv(f'{path_addon}voiceSauce_idd.csv', index = False)
 
 
-# TODO: get hmong files to wav
-
-# list of anamolies:
+# list of anamolies (important for filepath function)
 # - gujarati "Audio" -> ch1 (fixed!)
 # - also: gujarati M1 data is not here, the M1 folder just has M10 data but again. :(
-# - hmong "_Audio" -> ø (also pcxuirer womp)
+# - hmong "_Audio" -> ø (also pcquirer womp) (I THINK THERES A PCQUIRER WORKAROUND!!!)
 # - i dont remember if luchun has anything up (it doesn't) (well okay one minor thing)
 # - mandarin F5 is in '.egg' format. boooooo (they account for 6 datapoints, so dont worry)
 # - mandarin F42 is missing, but thats 4 rows so don't fret
