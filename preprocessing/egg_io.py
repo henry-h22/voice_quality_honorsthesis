@@ -9,6 +9,7 @@ def filepath(tableLine: pd.core.series.Series) -> str:
     language = tableLine['language']
     variety = tableLine['language_variety']
     filename = tableLine['filename']
+    filetype = 'wav'
 
     # These are various catches!
     if language == 'Gujarati': 
@@ -17,6 +18,9 @@ def filepath(tableLine: pd.core.series.Series) -> str:
         filename = filename[:3] + 'tone_' + filename[3:]
     if language == 'Luchun':
         filename = filename.replace("x005F_", '')
+    if language == 'Hmong':
+        filename = filename.replace("_Audio", '')
+        filetype = 'pmf'
 
     boCatch = ''
     if language == 'Bo': # this is because most of the Bo Village 1 files end in a random space
@@ -28,7 +32,7 @@ def filepath(tableLine: pd.core.series.Series) -> str:
     villageSplit = language in VILLAGE_SPLIT_LANGUAGES
     divider = f'/{variety}/' if villageSplit else '/'
 
-    return f'egg_melt/{language}{divider}{filename}{boCatch}.wav'
+    return f'egg_melt/{language}{divider}{filename}{boCatch}.{filetype}'
 
 
 def random_test_file(df: pd.DataFrame, filterLanguage: str = '/') -> pd.core.series.Series:
