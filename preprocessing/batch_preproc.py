@@ -17,7 +17,7 @@ VERBOSE = True
 language = 'Hmong'
 
 for _, row in all_data.iterrows():
-    if row['language'] != 'Hmong': continue
+    # if row['language'] != 'Hmong': continue
 
     try:
         egg, samplerate = loadFile(row, TIMEPOINT)
@@ -63,7 +63,7 @@ for _, row in all_data.iterrows():
     # plt.plot(final)
 
 print(skips)
-exportToFDA(egg_signals, egg_ids, newVoiceSauceDataFrame, language = language)
+exportToFDA(egg_signals, egg_ids, newVoiceSauceDataFrame)
 # plt.show()
 
 
