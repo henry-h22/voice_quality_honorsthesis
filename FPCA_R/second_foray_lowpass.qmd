@@ -68,17 +68,30 @@ all_data %>%
 all_data %>% 
   ggplot(aes(y = V1, color = LPhon)) +
   geom_boxplot()
+all_data %>% 
+  ggplot(aes(y = V1, color = phonation)) +
+  geom_boxplot()
 V1_phonation_lm <- lm(V1 ~ phonation + language, data = all_data, na.action = na.exclude)
 summary(V1_phonation_lm)
 ```
 
 ```{r}
 all_data %>% 
-  ggplot(aes(y = V2, color = phonation)) +
-  geom_boxplot()
+  filter(V2 < 0.122) %>%
+  ggplot(aes(x = V1, color = language)) +
+  geom_boxplot() +
+  facet_wrap(~phonation)
 all_data %>% 
-  ggplot(aes(y = V2, color = language)) +
+  filter(V2 < 0.122) %>%
+  ggplot(aes(x = V2, color = language, fill = language)) +
+  geom_density(alpha = 0.222) +
+  facet_wrap(~phonation)
+all_data %>% 
+  ggplot(aes(y = V1, color = language)) +
   geom_boxplot()
+# all_data %>% 
+#   ggplot(aes(x = V1, fill = language, color = language)) +
+#   geom_density(alpha = 0.25)
 ```
 
 ```{r}
@@ -103,6 +116,7 @@ all_data %>%
 ```{r}
 # IN GUJARATI: V2 is kinda CPP?? / HNR?
 # (that is also true of Zapotec! similar corr value of around 0.3222)
+# Hmong isn't showing that unfortch!
 all_data %>% 
   ggplot(aes(y = V2, x = CPP)) +
   geom_point() +
@@ -111,6 +125,7 @@ all_data %>%
 cor(all_data$V2, all_data$CPP)
 modell <- lm(CPP ~ V2, data = all_data)
 summary(modell)
+sd(all_data$CPP)
 ```
 
 
@@ -129,8 +144,8 @@ all_data %>%
   geom_point(color = 'brown4') +
   geom_smooth(method = "lm", color = 'skyblue3')
 all_data %>% 
-  ggplot(aes(x = V1, y = CQ_H)) +
-  geom_point(color = 'brown4', size = 0.67) +
+  ggplot(aes(x = V1, y = CQ_H, color = phonation)) +
+  geom_point(size = 0.67) +
   facet_wrap(~ language) +
   geom_smooth(method = 'lm', color = 'skyblue')
 ```
@@ -160,10 +175,22 @@ all_data %>%
 
 ```{r}
 all_data %>% 
-  ggplot(aes(x = strF0, y = V4, color = speaker_sex)) +
-  geom_point()
+  ggplot(aes(x = strF0, y = V4)) +
+  geom_point() +
+  facet_wrap(~ phonation)
 phonLM <- lm(V4 ~ speaker_sex + strF0, data = all_data, na.action = na.exclude)
 summary(phonLM)
+```
+
+
+```{r}
+all_data %>% 
+  filter(phonation %in% c("Modal")) %>% 
+  ggplot(aes(y = V1, color = LPhon)) +
+  geom_boxplot()
+# 
+# stupidWhatever <- lm(V1 ~ phonation, data = all_data)
+# summary(stupidWhatever)
 ```
 
 

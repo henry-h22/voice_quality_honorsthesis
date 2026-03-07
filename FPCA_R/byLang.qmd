@@ -1,0 +1,96 @@
+---
+title: "byLang"
+format: html
+---
+
+
+```{r}
+#| include: false
+library(tidyverse)
+library(fda)
+```
+
+```{r}
+pulsesByLang <- read.csv("by_lang/jjSourcePaper_egg_pulses.csv", header = TRUE, check.names = FALSE)
+pulses_matrixByLang <- as.matrix(pulsesByLang)
+idsByLang <- colnames(pulses_matrixByLang)
+
+timeByLang <- seq(0, 1, length.out = nrow(pulses_matrixByLang))
+fourierBasis <- create.fourier.basis(c(0, 1), nbasis = 200)
+
+functional_data_pulsesByLang <- Data2fd(
+  argvals = timeByLang, 
+  y = pulses_matrixByLang, 
+  basisobj = fourierBasis,
+  fdnames = list("Time", "token_id" = idsByLang, "Value"),
+  lambda = 10E-12
+)
+```
+
+```{r}
+pca_resultsByLang <- pca.fd(functional_data_pulsesByLang, nharm = 200)
+```
+
+```{r}
+plot(functional_data_pulsesByLang)
+```
+
+```{r}
+# plot.pca.fd(pca_results, harm = seq(1:10))
+plot.pca.fd(pca_resultsByLang, harm = seq(1:4))
+```
+
+```{r}
+scoresByLang <- as.data.frame(pca_resultsByLang$scores) %>%
+  dplyr::select(1:4)
+```
+
+```{r}
+ByLang_data <- read_csv("by_lang/jjSourcePaper_voiceSauce_idd.csv") %>% 
+  # filter(language %in% c("Modal")) %>% 
+  cbind(scoresByLang)
+```
+
+```{r}
+ByLang_data %>% 
+  ggplot(aes(y = LPhon, fill = phonation)) +
+  geom_bar()
+```
+
+
+```{r}
+ByLang_data %>%
+  ggplot(aes(color = language, x = V1)) +
+  geom_density()
+
+ByLang_data %>%
+  ggplot(aes(y = V1, color = LPhon)) +
+  geom_boxplot()
+
+stupidByLangyModel <- lm(V1 ~ language, data = ByLang_data)
+summary(stupidByLangyModel)
+```
+
+```{r}
+ByLang_all_data <- all_data %>%
+  filter(language %in% c("Bo", "Yi", "Luchun"))
+
+cor.test(ByLang_all_data$V1, ByLang_data_less$V1)
+```
+
+```{r}
+# ByLang_all_data %>%
+#   filter(language == "Hmong") %>%
+#   filter(V1 < 0.1) %>%
+#   filter(V1 > 0.05) %>%
+#   dplyr::select(filename, V1, CQ_H) %>%
+#   head()
+# 
+# creakytense_all_data %>%
+#   filter(language == "Mandarin") %>%
+#   filter(V1 > -0.1) %>%
+#   filter(V1 < -0.05) %>%
+#   dplyr::select(filename, V1, CQ_H) %>%
+#   head()
+```
+
