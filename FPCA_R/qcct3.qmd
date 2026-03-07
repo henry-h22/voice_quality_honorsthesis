@@ -50,20 +50,38 @@ corrRowLanguage <- function(lang) {
   tempLangFilter <- all_data %>% 
     filter(language == lang)
   print(tibble(c(
-    cor(tempLangFilter$V1, tempLangFilter$H1c, use = "na.or.complete"),
-    cor(tempLangFilter$V2, tempLangFilter$H1c, use = "na.or.complete"),
-    cor(tempLangFilter$V3, tempLangFilter$H1c, use = "na.or.complete"),
-    cor(tempLangFilter$V4, tempLangFilter$H1c, use = "na.or.complete")
+    cor(tempLangFilter$V1, tempLangFilter$SQ, use = "na.or.complete"),
+    cor(tempLangFilter$V2, tempLangFilter$SQ, use = "na.or.complete"),
+    cor(tempLangFilter$V3, tempLangFilter$SQ, use = "na.or.complete"),
+    cor(tempLangFilter$V4, tempLangFilter$SQ, use = "na.or.complete")
   )))
   rm(tempLangFilter)
+}
+
+corrTest <- function(lang) {
+  tempLangFilter <- all_data %>% 
+    filter(language == lang)
+  print(cor.test(tempLangFilter$V4, tempLangFilter$strF0))
 }
 ```
 
 ```{r}
-# Bo	Gujarati	Luchun	Mandarin	Miao	Yi	Zapotec
-for (language in c("Bo", "Gujarati", "Luchun", "Mandarin", "Miao", "Yi", "Zapotec")) {
+# all_data %>% 
+#   filter(language %in% c("Bo", "Yi", "Luchun")) %>% 
+#   ggplot(aes(x = CPP, y = V4, color = language)) +
+#   geom_point()
+```
+
+
+```{r}
+# Bo	Gujarati  Hmong 	Luchun	Mandarin	Miao	Yi	Zapotec
+for (language in c("Bo", "Gujarati", "Hmong", "Luchun", "Mandarin", "Miao", "Yi", "Zapotec")) {
   corrRowLanguage(language)
 }
+
+# for (language in c("Tense", "Creaky", "Modal", "Breathy", "Lax")) {
+#   corrRowLanguage(language)
+# }
 
 ```
 
@@ -76,5 +94,24 @@ h1h2model <- lmspec %>%
   fit(H1H2c ~ CQ_H + peak_Vel + min_Vel + SQ + SQ4_SQ3 + SQ2_SQ1, data = all_data)
 
 h1h2model %>% tidy()
+```
+
+
+
+
+
+# checking p vals
+
+```{r}
+zapotec_data <- all_data %>% 
+  filter(language == "Zapotec") %>% 
+  mutate(
+    breathy = case_when(
+      phonation == "breathy" ~ T,
+      .default = F
+  ))
+zapV2_model <- glm(breathy ~ V2, data = zapotec_data, family = "binomial")
+summary(zapV2_model)
+
 ```
 
