@@ -1,0 +1,97 @@
+---
+title: "byPhon"
+format: html
+---
+
+
+```{r}
+#| include: false
+library(tidyverse)
+library(fda)
+```
+
+```{r}
+pulsesCreaky <- read.csv("by_phon/Breathy_egg_pulses.csv", header = TRUE, check.names = FALSE)
+pulses_matrixCreaky <- as.matrix(pulsesCreaky)
+idsCreaky <- colnames(pulses_matrixCreaky)
+
+timeCreaky <- seq(0, 1, length.out = nrow(pulses_matrixCreaky))
+fourierBasis <- create.fourier.basis(c(0, 1), nbasis = 200)
+
+functional_data_pulsesCreaky <- Data2fd(
+  argvals = timeCreaky, 
+  y = pulses_matrixCreaky, 
+  basisobj = fourierBasis,
+  fdnames = list("Time", "token_id" = idsCreaky, "Value"),
+  lambda = 10E-12
+)
+```
+
+```{r}
+pca_resultsCreaky <- pca.fd(functional_data_pulsesCreaky, nharm = 200)
+```
+
+```{r}
+plot(functional_data_pulsesCreaky)
+```
+
+```{r}
+# plot.pca.fd(pca_results, harm = seq(1:10))
+plot.pca.fd(pca_resultsCreaky, harm = seq(1:4))
+```
+
+```{r}
+scoresCreaky <- as.data.frame(pca_resultsCreaky$scores) %>%
+  dplyr::select(1:4)
+```
+
+```{r}
+creaky_data <- read_csv("by_phon/Breathy_voiceSauce_idd.csv") %>% 
+  filter(phonation %in% c("Breathy")) %>% 
+  cbind(scoresCreaky)
+```
+
+```{r}
+creaky_data %>% 
+  ggplot(aes(y = LPhon, fill = phonation)) +
+  geom_bar()
+```
+
+
+```{r}
+creaky_data %>% 
+  ggplot(aes(color = phonation, x = V3)) +
+  geom_density()
+
+creaky_data %>% 
+  ggplot(aes(y = V1, color = LPhon)) +
+  geom_boxplot()
+
+stupidCreakyModel <- lm(V1 ~ language, data = creaky_data)
+summary(stupidCreakyModel)
+```
+
+```{r}
+creakytense_all_data <- all_data %>% 
+  filter(phonation %in% c("Breathy"))
+  
+cor.test(creakytense_all_data$V4, creaky_data$V4)
+```
+
+```{r}
+creakytense_all_data %>% 
+  filter(language == "Hmong") %>% 
+  filter(V1 < 0.1) %>% 
+  filter(V1 > 0.05) %>% 
+  dplyr::select(filename, V1, CQ_H) %>% 
+  head()
+
+creakytense_all_data %>% 
+  filter(language == "Mandarin") %>% 
+  filter(V1 > -0.1) %>% 
+  filter(V1 < -0.05) %>% 
+  dplyr::select(filename, V1, CQ_H) %>% 
+  head()
+```
+
+

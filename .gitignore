@@ -220,3 +220,4 @@ marimo/_lsp/
 __marimo__/
 
 .DS_Store
+/FPCA_R/by_phon

@@ -15,9 +15,12 @@ egg_ids = []
 newVoiceSauceDataFrame = []
 VERBOSE = True
 language = 'Hmong'
+phonation = 'CreakyTense'
+phonList = ['Creaky', 'Tense']
 
 for _, row in all_data.iterrows():
-    # if row['language'] != 'Hmong': continue
+    # if row['language'] != language: continue
+    if row['phonation'] not in phonList: continue
 
     try:
         egg, samplerate = loadFile(row, TIMEPOINT)
@@ -63,7 +66,7 @@ for _, row in all_data.iterrows():
     # plt.plot(final)
 
 print(skips)
-exportToFDA(egg_signals, egg_ids, newVoiceSauceDataFrame)
+exportToFDA(egg_signals, egg_ids, newVoiceSauceDataFrame, language = phonation)
 # plt.show()
 
 
