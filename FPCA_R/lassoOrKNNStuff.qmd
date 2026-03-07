@@ -1,0 +1,66 @@
+---
+title: "lassoorknnbs"
+format: html
+---
+
+```{r}
+library(tidyverse)
+library(tidymodels)
+```
+
+
+```{r}
+#| message: false
+#| warning: false
+
+# Here, we specify our LASSO model (as opposed to other potential techniques such as K-nearest neighbors or least squares regression).
+lasso_spec <- linear_reg() %>%             
+  set_mode("regression") %>% 
+  set_engine("glmnet") %>%                 
+  set_args(mixture = 1, penalty = tune())  
+
+# This is our variable recipe: here we remove variables mentioned in the above section, and code our categorical predictor variables to be numerical (e.g., destination Hawaii may become the number 17).
+V1_recipe <- recipe(V4 ~ CQ_H + strF0 + CPP + HNR05 + peak_Vel + SQ4_SQ3, data = all_data) %>% 
+  step_normalize(V4)
+
+# Here we set up a workflow, combining our recipe and model from above.
+lasso_workflow <- workflow() %>% 
+  add_recipe(V1_recipe) %>% 
+  add_model(lasso_spec)
+
+# Last, we estimate model error across many possible values for our tuning parameter.
+# This is done so that later we can choose the most parsimonious value for lambda, as mentioned in the section above.
+set.seed(253) # We set the seed to ensure replicable results
+lasso_models <- lasso_workflow %>% 
+  tune_grid(
+    grid = grid_regular(penalty(range = c(-10, -0.1)), levels = 50),  
+    resamples = vfold_cv(all_data, v = 10),   
+    metrics = metric_set(mae)
+  )
+```
+
+```{r}
+# Here, we plot the error values for different values of lambda.
+autoplot(lasso_models) +
+  scale_x_continuous() +
+  xlab(expression(lambda))
+
+# Here is where we choose the most parsimonious value
+parsimonious_penalty <- lasso_models %>% 
+  select_by_one_std_err(metric = "mae", desc(penalty))
+
+parsimonious_penalty
+```
+
+```{r}
+# Finally, we fit the model with the given lambda value to the data
+final_lasso <- lasso_workflow %>% 
+  finalize_workflow(parameters = parsimonious_penalty) %>% 
+  fit(data = all_data)
+
+# Here we present the non-zero model coefficients. 
+# These are the variables that remain after the LASSO fitting process culled the large list
+final_lasso %>% 
+  tidy() %>% 
+  filter(estimate != 0)
+```
