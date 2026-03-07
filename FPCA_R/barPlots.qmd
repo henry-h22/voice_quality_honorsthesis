@@ -99,7 +99,7 @@ all_data %>%
 Tbh, we should make a barplot of Vx for phonation by language, mirroring our plots from earlier.
 ```{r}
 all_data %>% 
-  ggplot(aes(x = V1, color = phonation)) +
+  ggplot(aes(color = phonation, y = V1)) +
   geom_boxplot() +
   facet_wrap(~language)
 
@@ -118,6 +118,8 @@ all_data %>%
   geom_boxplot() +
   facet_wrap(~language)
 ```
+
+
 
 
 
