@@ -1,0 +1,95 @@
+---
+title: "svmForay"
+format: html
+---
+
+We assume that the all_data dataframe exists in the environment, which comes from `second_foray_lowpass.qmd` (because I haven't had time to clean these files up oops!)
+
+```{r}
+#| message: false
+#| warning: false
+library(tidyverse)
+library(tidymodels)
+```
+
+```{r}
+all_data %>%
+  ggplot(aes(x = V1)) +
+  geom_density()
+
+all_data %>% 
+  filter(V1 > 0.2, language == "Hmong")
+```
+
+
+```{r}
+svmData <- all_data %>% 
+  drop_na() %>% 
+  mutate(phonation = as.factor(phonation)) %>% 
+  # select(phonation, strF0:V4) %>% # select(-LPhon, -token_id, -tone_misc) %>% # EVERYTHING (within reason)
+  # select(phonation:SQ) %>% # removes V1-V4
+  select(phonation, strF0, H1H2c, H2H4c, CPP, CQ_H, SQ, Energy, HNR05, HNR15, HNR25, HNR35, V1, V2, V3, V4) # curated list
+```
+
+
+```{r}
+svm_spec <- svm_rbf() %>%
+  set_mode("classification") %>%
+  set_engine("kernlab")
+```
+
+```{r}
+svm_recipe <- recipe(phonation ~ ., data = svmData) %>%
+  # consider step_corr some day!
+  # step_corr(all_numeric_predictors()) %>% 
+  step_dummy(all_nominal_predictors()) %>% 
+  step_normalize(all_predictors()) # Centers and scales predictors
+```
+
+```{r}
+svm_workflow <- workflow() %>%
+  add_recipe(svm_recipe) %>%
+  add_model(svm_spec)
+```
+
+```{r}
+svm_fit <- svm_workflow %>%
+  fit(data = svmData)
+```
+
+
+```{r}
+predictions <- predict(svm_fit, new_data = svmData, type = "class")
+
+
+conf_mat_data <- svmData %>% 
+  select(phonation) %>% 
+  cbind(predictions)
+
+conf_mat(conf_mat_data, truth = phonation, estimate = .pred_class)
+sum(conf_mat_data$phonation == conf_mat_data$.pred_class, na.rm = TRUE) / nrow(conf_mat_data)
+# acc is 58.8% without V1-4, and 64.4% with! cool!!
+# furthermore, .84 with everything (okay rad).... and 83.9% without V1-V4. didn't do shit. damn!
+# ...probably overfit!!! wait omfg guys it definitely is. cv cv cv cv!
+```
+
+```{r}
+set.seed(222)
+svm_cv <- svm_workflow %>% 
+  fit_resamples(
+    phonation ~ .,
+    resamples = vfold_cv(svmData, v = 10), 
+    control = control_resamples(save_pred = TRUE, event_level = 'second'),
+    metrics = metric_set(accuracy)
+  )
+
+svm_cv %>% 
+  collect_metrics()
+
+# CV acc was 0.7246105 without V1-V4,
+# ....and 0.7237493 with it??? how!! boo.
+# removing step_corr didn't do anything either.
+
+# current curated list gives 0.6720065,and adding V1-V4 DOES NOT DO ANYTHING!!! BOOOO!!!!
+```
+
