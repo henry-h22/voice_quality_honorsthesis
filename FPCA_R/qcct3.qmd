@@ -41,7 +41,7 @@ corrRow <- function(quantVar) {
 etaCorrRow(all_data$speaker_sex)
 ```
 ```{r}
-corrRow(all_data$CPP)
+corrRow(all_data$HNR25)
 # TODO: split this stuff up by language? maybe there's something there???
 ```
 
@@ -85,6 +85,12 @@ for (language in c("Bo", "Gujarati", "Hmong", "Luchun", "Mandarin", "Miao", "Yi"
 
 ```
 
+```{r}
+all_data %>% 
+  filter(phonation == "Modal") %>% 
+  ggplot(aes(y = V1, color = LPhon)) +
+  geom_boxplot()
+```
 
 
 # this is table 5 stuff
@@ -98,6 +104,12 @@ h1h2model %>% tidy()
 
 
 
+```{r}
+cor.test(all_data$SQ, all_data$V1)
+cor.test(all_data$SQ, all_data$V2)
+cor.test(all_data$SQ, all_data$V3)
+cor.test(all_data$SQ, all_data$V4)
+```
 
 
 # checking p vals

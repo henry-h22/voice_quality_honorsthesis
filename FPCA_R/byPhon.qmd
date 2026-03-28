@@ -11,7 +11,7 @@ library(fda)
 ```
 
 ```{r}
-pulsesCreaky <- read.csv("by_phon/Breathy_egg_pulses.csv", header = TRUE, check.names = FALSE)
+pulsesCreaky <- read.csv("by_phon/CreakyTense_egg_pulses.csv", header = TRUE, check.names = FALSE)
 pulses_matrixCreaky <- as.matrix(pulsesCreaky)
 idsCreaky <- colnames(pulses_matrixCreaky)
 
@@ -46,8 +46,8 @@ scoresCreaky <- as.data.frame(pca_resultsCreaky$scores) %>%
 ```
 
 ```{r}
-creaky_data <- read_csv("by_phon/Breathy_voiceSauce_idd.csv") %>% 
-  filter(phonation %in% c("Breathy")) %>% 
+creaky_data <- read_csv("by_phon/Modal_voiceSauce_idd.csv") %>% 
+  filter(phonation %in% c("Modal")) %>% 
   cbind(scoresCreaky)
 ```
 

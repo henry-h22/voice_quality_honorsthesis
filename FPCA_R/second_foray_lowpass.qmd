@@ -34,6 +34,7 @@ functional_data_pulses <- Data2fd(
 pca_results <- pca.fd(functional_data_pulses, nharm = 200)
 ```
 
+
 ```{r}
 plot(functional_data_pulses)
 ```
@@ -183,12 +184,26 @@ summary(phonLM)
 ```
 
 
+
 ```{r}
 all_data %>% 
-  filter(phonation %in% c("Modal")) %>% 
-  ggplot(aes(y = V1, color = LPhon)) +
+  # filter(phonation %in% c("Tense", "Creaky")) %>% 
+  ggplot(aes(y = V1, color = phonation)) +
   geom_boxplot()
+
+all_data %>% 
+  # filter(phonation %in% c("Tense", "Creaky")) %>% 
+  ggplot(aes(y = V2, color = phonation)) +
+  geom_boxplot()
+
+all_data %>% 
+  ggplot(aes(x = V1, y = V2)) + # color = phonation found nothinggg
+  geom_point() +
+  geom_smooth()
+  # + facet_wrap(~language)
 # 
+# This shape could be interestingg???? Whatever I'm done.
+
 # stupidWhatever <- lm(V1 ~ phonation, data = all_data)
 # summary(stupidWhatever)
 ```
