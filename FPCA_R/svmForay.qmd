@@ -26,9 +26,18 @@ all_data %>%
 svmData <- all_data %>% 
   drop_na() %>% 
   mutate(phonation = as.factor(phonation)) %>% 
-  # select(phonation, strF0:V4) %>% # select(-LPhon, -token_id, -tone_misc) %>% # EVERYTHING (within reason)
+  mutate(language = as.factor(language)) %>% 
+  mutate(language = as.factor(LPhon)) %>% 
+  # dplyr::select(-token_id, -LPhon, -tone_misc) %>% 
+  dplyr::select(-token_id, -tone_misc) %>% 
+  dplyr::select(LPhon, CQ_H, SQ, SQ2_SQ1, SQ4_SQ3, peak_Vel, min_Vel, H1H2c, H2H4c, H1A1c, H1A2c, H1A3c, strF0, CPP, Energy, V1:V4) %>% dplyr::select(-V1, -V2, -V3, -V4)
+  # dplyr::select(phonation, V1, V2, V3, V4)
+
+
+# select(-LPhon, -token_id, -tone_misc) %>% # EVERYTHING (within reason)
   # select(phonation:SQ) %>% # removes V1-V4
-  select(phonation, strF0, H1H2c, H2H4c, CPP, CQ_H, SQ, Energy, HNR05, HNR15, HNR25, HNR35, V1, V2, V3, V4) # curated list
+  # select(phonation, strF0, H1H2c, H2H4c, CPP, CQ_H, SQ, Energy, HNR05, HNR15, HNR25, HNR35, V1, V2, V3, V4) # curated list
+svmData
 ```
 
 
@@ -39,9 +48,7 @@ svm_spec <- svm_rbf() %>%
 ```
 
 ```{r}
-svm_recipe <- recipe(phonation ~ ., data = svmData) %>%
-  # consider step_corr some day!
-  # step_corr(all_numeric_predictors()) %>% 
+svm_recipe <- recipe(LPhon ~ ., data = svmData) %>%
   step_dummy(all_nominal_predictors()) %>% 
   step_normalize(all_predictors()) # Centers and scales predictors
 ```
@@ -53,31 +60,47 @@ svm_workflow <- workflow() %>%
 ```
 
 ```{r}
-svm_fit <- svm_workflow %>%
-  fit(data = svmData)
+# svm_fit <- svm_workflow %>%
+#   fit(data = svmData)
+```
+
+```{r}
+# set.seed(222)
+# 
+# svm_folds <- vfold_cv(svmData, v = 10, strata = phonation) 
+# 
+# svm_kfold_cross <- svm_workflow %>%
+#   fit_resamples(resamples = svm_folds)
+```
+
+```{r}
+# collect_metrics(svm_kfold_cross)
+# Okay so WITHOUT the principal components, we hit 73% CV accuracy
+# soooo V1-V4 don't do shit. literally still 73%
 ```
 
 
+
 ```{r}
-predictions <- predict(svm_fit, new_data = svmData, type = "class")
-
-
-conf_mat_data <- svmData %>% 
-  select(phonation) %>% 
-  cbind(predictions)
-
-conf_mat(conf_mat_data, truth = phonation, estimate = .pred_class)
-sum(conf_mat_data$phonation == conf_mat_data$.pred_class, na.rm = TRUE) / nrow(conf_mat_data)
-# acc is 58.8% without V1-4, and 64.4% with! cool!!
-# furthermore, .84 with everything (okay rad).... and 83.9% without V1-V4. didn't do shit. damn!
-# ...probably overfit!!! wait omfg guys it definitely is. cv cv cv cv!
+# predictions <- predict(svm_fit, new_data = svmData, type = "class")
+# svmData
+# 
+# conf_mat_data <- svmData %>% 
+#   dplyr::select(phonation) %>% 
+#   cbind(predictions)
+# 
+# conf_mat(conf_mat_data, truth = phonation, estimate = .pred_class)
+# sum(conf_mat_data$phonation == conf_mat_data$.pred_class, na.rm = TRUE) / nrow(conf_mat_data)
+# # acc is 58.8% without V1-4, and 64.4% with! cool!!
+# # furthermore, .84 with everything (okay rad).... and 83.9% without V1-V4. didn't do shit. damn!
+# # ...probably overfit!!! wait omfg guys it definitely is. cv cv cv cv!
 ```
 
 ```{r}
 set.seed(222)
 svm_cv <- svm_workflow %>% 
   fit_resamples(
-    phonation ~ .,
+    LPhon ~ .,
     resamples = vfold_cv(svmData, v = 10), 
     control = control_resamples(save_pred = TRUE, event_level = 'second'),
     metrics = metric_set(accuracy)
@@ -91,5 +114,11 @@ svm_cv %>%
 # removing step_corr didn't do anything either.
 
 # current curated list gives 0.6720065,and adding V1-V4 DOES NOT DO ANYTHING!!! BOOOO!!!!
+
+# yeah my curated list did the same thing
+
+# on language task: 80.9% w/o PCs, ... 83.1% with them. that's.... something??
+
+# Lphon prediction is 61.7% with PCs, 62% without. damn!!
 ```
 

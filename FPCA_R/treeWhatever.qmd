@@ -1,0 +1,117 @@
+---
+title: "treeWhatever"
+format: pdf
+---
+
+assumes a lot of things have been run. whatever.
+see `svmForay.qmd`
+
+```{r}
+# Load packages
+library(tidymodels)
+library(rpart)
+library(rpart.plot)
+
+# Resolves package conflicts by preferring tidymodels functions
+tidymodels_prefer()
+```
+
+```{r}
+# STEP 1: tree specification
+# If y is quantitative, change "classification" to "regression"
+tree_spec <- decision_tree() %>%
+  set_mode("classification") %>% 
+  set_engine(engine = "rpart") %>% 
+  set_args(cost_complexity = tune(),  
+           min_n = 2, 
+           tree_depth = 30)
+
+# STEP 2: variable recipe
+# There are no necessary preprocessing steps for trees!
+variable_recipe <- recipe(phonation ~ ., data = svmData)
+
+# STEP 3: tree workflow
+tree_workflow <- workflow() %>% 
+  add_recipe(variable_recipe) %>% 
+  add_model(tree_spec)
+
+# STEP 4: Estimate multiple trees using a range of possible cost complexity values
+# - If y is quantitative, change "accuracy" to "mae"
+# - cost_complexity is on the log10 scale (10^(-5) to 10^(0.1))
+#   I start with a range from -5 to 2 and then tweak
+set.seed(222)
+tree_models <- tree_workflow %>% 
+  tune_grid(
+    grid = grid_regular(cost_complexity(range = c(-10, -1)), levels = 10),
+    resamples = vfold_cv(svmData, v = 5),
+    metrics = metric_set(accuracy)
+  )
+```
+
+
+```{r}
+# Plot the CV accuracy vs cost complexity for our trees
+# x-axis is on the original (not log10) scale
+tree_models %>% 
+  autoplot() + 
+  scale_x_continuous()
+
+# Identify cost complexity which produced the highest CV accuracy
+best_cost <- tree_models %>% 
+  select_best(metric = "accuracy")
+
+# Get the CV accuracy when using best_cost
+tree_models %>% 
+  collect_metrics() %>% 
+  filter(cost_complexity == best_cost$cost_complexity)
+
+# Identify cost complexity which produced the parsimonious tree
+parsimonious_cost <- tree_models %>% 
+  select_by_one_std_err(metric = "accuracy", desc(cost_complexity))
+
+# Get the CV accuracy when using parsim_cost
+tree_models %>% 
+  collect_metrics() %>% 
+  filter(cost_complexity == parsimonious_cost$cost_complexity)
+
+# .5876 with V1-V4, BETTER without them. goddamnit
+```
+
+```{r}
+final_tree <- tree_workflow %>% 
+  finalize_workflow(parameters = parsimonious_cost) %>% 
+  fit(data = svmData)
+```
+
+```{r}
+# Tree with accuracy info in each node
+# Branches are NOT proportional to classification improvement
+final_tree %>% 
+  extract_fit_engine() %>% 
+  rpart.plot()
+
+# Tree withOUT accuracy info in each node
+# Branches ARE proportional to classification improvement
+final_tree %>%
+  extract_fit_engine() %>%
+  plot()
+final_tree %>%
+  extract_fit_engine() %>%
+  text()
+```
+
+
+```{r}
+# Print the metrics
+final_tree %>%
+  extract_fit_engine() %>%
+  pluck("variable.importance")
+
+# Plot the metrics
+# Plug in the number of top predictors you wish to plot
+# (The upper limit varies by application!)
+library(vip)
+final_tree %>% 
+  vip(geom = "point", num_features = 100)
+```
+
