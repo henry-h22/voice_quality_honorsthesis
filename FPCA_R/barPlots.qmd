@@ -42,11 +42,11 @@ jjSplit <- all_data %>%
 This is just trying to get the same stuff as the JJ paper. We are seeing very similar behavior with our V1 as their PC1, but not really after that.
 ```{r}
 all_data %>% 
-  filter(language == "Yi" | language == "Bo" | language == "Luchun") %>% 
-  ggplot(aes(x = phonation, y = V2)) +
+  # filter(language == "Yi" | language == "Bo" | language == "Luchun") %>%
+  ggplot(aes(x = phonation, y = PC1)) +
   stat_summary(fun = "mean", geom = "bar", fill = "skyblue", color = "black") +
-  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1),
-               geom = "errorbar", width = 0.2)
+  geom_hline(yintercept = 0) +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), geom = "errorbar", width = 0.2)
 ```
 
 ```{r}
