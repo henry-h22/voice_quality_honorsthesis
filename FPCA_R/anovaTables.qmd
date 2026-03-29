@@ -1,0 +1,125 @@
+---
+title: "anovaTables"
+format: pdf
+---
+
+this assumes `second_foray_lowpass.qmd` has been run! :D
+
+```{r}
+library(tidyverse)
+library(afex)
+library(lmerTest)
+conflicted::conflicts_prefer(lmerTest::lmer)
+```
+
+```{r}
+all_data$speaker_id <- as.factor(all_data$speaker_id)
+all_data$phonation <- as.factor(all_data$phonation)
+all_data$speaker_sex <- as.factor(all_data$speaker_sex)
+
+all_data <- all_data %>% 
+  mutate(PC1 = V1) %>% 
+  mutate(PC2 = V2) %>% 
+  mutate(PC3 = V3) %>% 
+  mutate(PC4 = V4)
+
+all_data <- all_data %>% 
+  mutate(tone = case_match(
+    tone_category,
+    NA ~ "N/A",
+    "Big" ~ "Mid", # "big" are all 51, calling it mid
+    .default = tone_category
+  ))
+all_data$tone <- as.factor(all_data$tone)
+```
+
+```{r}
+modal_data$speaker_id <- as.factor(modal_data$speaker_id)
+modal_data$phonation <- as.factor(modal_data$phonation)
+modal_data$speaker_sex <- as.factor(modal_data$speaker_sex)
+
+modal_data <- modal_data %>% 
+  mutate(PC1 = V1) %>% 
+  mutate(PC2 = V2) %>% 
+  mutate(PC3 = V3) %>% 
+  mutate(PC4 = V4)
+
+modal_data <- modal_data %>% 
+  mutate(tone = case_match(
+    tone_category,
+    NA ~ "N/A",
+    "Big" ~ "Mid", # "big" are all 51, calling it mid
+    .default = tone_category
+  ))
+modal_data$tone <- as.factor(modal_data$tone)
+```
+
+
+```{r}
+# 1. Build the Mixed Model
+# The syntax reads as: Predict PC1 based on phonation.
+# The (1 | subject_id) part tells the model: "Each subject has their own baseline, account for that!"
+phon1 <- lmer(PC1 ~ phonation + (1 | speaker_id), data = all_data)
+
+# 2. Extract the ANOVA-style table!
+anova(phon1)
+```
+holy shit 133?? that rocks
+
+```{r}
+pc1big <- lmer(PC1 ~ phonation + speaker_sex + language + tone + (1 | speaker_id), data = all_data)
+anova(pc1big)
+pc2big <- lmer(PC2 ~ phonation + speaker_sex + language + tone + (1 | speaker_id), data = all_data)
+anova(pc2big)
+pc3big <- lmer(PC3 ~ phonation + speaker_sex + language + tone + (1 | speaker_id), data = all_data)
+anova(pc3big)
+pc4big <- lmer(PC4 ~ phonation + speaker_sex + language + tone + (1 | speaker_id), data = all_data)
+anova(pc4big)
+```
+
+```{r}
+pc1big <- lmer(V1 ~ speaker_sex + language + tone + (1 | speaker_id), data = modal_data)
+anova(pc1big)
+pc2big <- lmer(V2 ~ speaker_sex + language + tone + (1 | speaker_id), data = modal_data)
+anova(pc2big)
+pc3big <- lmer(V3 ~ speaker_sex + language + tone + (1 | speaker_id), data = modal_data)
+anova(pc3big)
+pc4big <- lmer(V4 ~ speaker_sex + language + tone + (1 | speaker_id), data = modal_data)
+anova(pc4big)
+```
+
+
+```{r}
+summary(pc2big)
+print(pc2big, correlation=TRUE)
+```
+
+
+```{r}
+all_data %>% 
+  ggplot(aes(color = tone, y = PC4)) +
+  geom_boxplot() +
+  facet_wrap(~language)
+
+all_data %>% 
+  ggplot(aes(x = phonation, y = PC3)) +
+  geom_boxplot()
+
+all_data %>% 
+  ggplot(aes(x = phonation, y = CQ_H)) +
+  geom_boxplot()
+```
+
+```{r}
+all_data %>% 
+  ggplot(aes(x = PC1, y = PC2, shape = phonation, color = phonation)) +
+  geom_point() +
+  facet_wrap(~language)
+
+all_data %>% 
+  ggplot(aes(x = PC1, y = PC4, shape = phonation, color = phonation)) +
+  geom_point() +
+  facet_wrap(~language)
+```
+
+
