@@ -105,10 +105,31 @@ h1h2model %>% tidy()
 
 
 ```{r}
-cor.test(all_data$SQ, all_data$V1)
-cor.test(all_data$SQ, all_data$V2)
-cor.test(all_data$SQ, all_data$V3)
-cor.test(all_data$SQ, all_data$V4)
+jjdata <- all_data %>% 
+  filter(language %in% c("Luchun", "Bo", "Yi"))
+
+cor.test(jjdata$SQ, jjdata$V1)
+cor.test(jjdata$SQ, jjdata$V2)
+cor.test(jjdata$SQ, jjdata$V3)
+cor.test(jjdata$SQ, jjdata$V4)
+```
+```{r}
+cor.test(all_data$SQ2_SQ1, all_data$V1)
+cor.test(all_data$SQ2_SQ1, all_data$V2)
+cor.test(all_data$SQ2_SQ1, all_data$V3)
+cor.test(all_data$SQ2_SQ1, all_data$V4)
+```
+
+
+```{r}
+all_data %>% 
+  filter(language == "Zapotec") %>% 
+  # group_by(phonation, tone_contour) %>% count()
+  group_by(tone_contour, phonation) %>% count()
+
+# all_data %>% 
+#   ggplot(aes(x = CQ_H, y = strF0, color = tone_category)) +
+#   geom_point()
 ```
 
 
