@@ -10,6 +10,11 @@ We assume that the all_data dataframe exists in the environment, which comes fro
 #| warning: false
 library(tidyverse)
 library(tidymodels)
+library(yardstick)
+library(vip)
+library(LiblineaR)
+library(ggplot2)
+library(ggpattern)
 ```
 
 ```{r}
@@ -22,33 +27,57 @@ all_data %>%
 ```
 
 
+
+
 ```{r}
 svmData <- all_data %>% 
-  drop_na() %>% 
+  # mutate(phonation = as.factor(case_match( # 3-class
+  #   phonation,
+  #   "Breathy" ~ "BreathyLax",
+  #   "Lax" ~ "BreathyLax",
+  #   "Modal" ~ "Modal",
+  #   "Tense" ~ "CreakyTense",
+  #   "Creaky" ~ "CreakyTense"
+  # ))) %>%
+  mutate(phonation = as.factor(case_match(
+    phonation,
+    "Modal" ~ "Modal",
+    .default = "Nonmodal"
+  ))) %>%
   mutate(phonation = as.factor(phonation)) %>% 
   mutate(language = as.factor(language)) %>% 
   mutate(language = as.factor(LPhon)) %>% 
+  mutate(tone = as.factor(tone)) %>% 
   # dplyr::select(-token_id, -LPhon, -tone_misc) %>% 
   dplyr::select(-token_id, -tone_misc) %>% 
-  dplyr::select(LPhon, CQ_H, SQ, SQ2_SQ1, SQ4_SQ3, peak_Vel, min_Vel, H1H2c, H2H4c, H1A1c, H1A2c, H1A3c, strF0, CPP, Energy, V1:V4) %>% dplyr::select(-V1, -V2, -V3, -V4)
-  # dplyr::select(phonation, V1, V2, V3, V4)
+  dplyr::select(phonation, CQ_H, SQ, SQ2_SQ1, SQ4_SQ3, peak_Vel, min_Vel, H1H2c, H2H4c, H1A1c, H1A2c, H1A3c, strF0, CPP, Energy, PC1:PC4) %>% # dplyr::select(-PC1, -PC2, -PC3, -PC4) %>% 
+  drop_na()
 
 
-# select(-LPhon, -token_id, -tone_misc) %>% # EVERYTHING (within reason)
-  # select(phonation:SQ) %>% # removes V1-V4
-  # select(phonation, strF0, H1H2c, H2H4c, CPP, CQ_H, SQ, Energy, HNR05, HNR15, HNR25, HNR35, V1, V2, V3, V4) # curated list
-svmData
+(svmData)
+
+set.seed(222)
+folds <- vfold_cv(svmData, v = 5)
 ```
 
 
 ```{r}
-svm_spec <- svm_rbf() %>%
-  set_mode("classification") %>%
-  set_engine("kernlab")
+# svm_spec <- svm_linear() %>%
+#   set_mode("classification") %>%
+#   set_engine("kernlab")
+
+svmData %>%
+  group_by(phonation) %>%
+  summarise(count = n()) %>%
+  mutate(percentage = (count / sum(count)) * 100)
+
+svm_spec <- svm_linear(cost = 1) %>% 
+  set_engine("LiblineaR") %>% 
+  set_mode("classification")
 ```
 
 ```{r}
-svm_recipe <- recipe(LPhon ~ ., data = svmData) %>%
+svm_recipe <- recipe(phonation ~ ., data = svmData) %>%
   step_dummy(all_nominal_predictors()) %>% 
   step_normalize(all_predictors()) # Centers and scales predictors
 ```
@@ -58,6 +87,140 @@ svm_workflow <- workflow() %>%
   add_recipe(svm_recipe) %>%
   add_model(svm_spec)
 ```
+
+
+
+
+```{r}
+cv_results <- fit_resamples(
+  svm_workflow,
+  resamples = folds,
+  metrics = metric_set(accuracy, f_meas) # Requesting only accuracy
+)
+
+cv_metrics <- collect_metrics(cv_results)
+print(cv_metrics)
+```
+
+
+```{r}
+final_fit <- fit(svm_workflow, data = svmData)
+
+# Dig into the tidymodels object to extract the raw LiblineaR engine
+engine_fit <- extract_fit_engine(final_fit)
+
+# Extract the weights matrix (W)
+# The columns are your features, and the last column ('Bias') is the intercept.
+# cat("\n--- Underlying SVM Weights ---\n")
+# weights
+# If you want to format it nicely into a dataframe:
+weights <- engine_fit$W
+(weights_df <- as.data.frame(weights))
+```
+
+
+```{r}
+# 1. Grab the row names (which are your class levels) before pivoting
+weights_df <- as.data.frame(weights) %>%
+  rownames_to_column(var = "Class")
+
+# 2. Pivot the data, but keep the 'Class' column intact
+plot_data <- weights_df %>%
+  select(-Bias) %>% # Still dropping the intercept
+  pivot_longer(
+    cols = -Class, # Pivot all columns EXCEPT Class
+    names_to = "Feature", 
+    values_to = "Weight"
+  ) %>%
+  mutate(Direction = ifelse(Weight > 0, "Positive", "Negative"))
+
+# my_custom_order <- c("CQ", "SQ", "Contact Duration", "Decontact Duration", "PIC", "PDC", "H1-H2c", "H2-H4c", "H1-A1c", "H1-A2c", "H1-A3c", "F0", "CPP", "Energy")
+
+my_custom_order <- c("PC1", "PC2", "PC3", "PC4", "CQ", "SQ", "Contact Duration", "Decontact Duration", "PIC", "PDC", "H1-H2c", "H2-H4c", "H1-A1c", "H1-A2c", "H1-A3c", "F0", "CPP", "Energy")
+
+plot_data <- plot_data %>% 
+  mutate(Feature = factor(
+    case_match(
+      Feature,
+      "CQ_H" ~ "CQ",
+      "SQ" ~ "SQ",
+      "SQ2_SQ1" ~ "Contact Duration",
+      "SQ4_SQ3" ~ "Decontact Duration",
+      "peak_Vel" ~ "PIC",
+      "min_Vel" ~ "PDC",
+      "H1H2c" ~ "H1-H2c",
+      "H2H4c" ~ "H2-H4c",
+      "H1A1c" ~ "H1-A1c",
+      "H1A2c" ~ "H1-A2c",
+      "H1A3c" ~ "H1-A3c",
+      "strF0" ~ "F0",
+      "CPP" ~ "CPP",
+      "Energy" ~ "Energy",
+      "PC1" ~ "PC1",
+      "PC2" ~ "PC2",
+      "PC3" ~ "PC3",
+      "PC4" ~ "PC4"
+    ), 
+    levels = rev(my_custom_order)
+  ))
+
+# --- STEP 1: DEFINE CUSTOM Y-AXIS ORDER ---
+# List your features exactly as you want them to read from TOP to BOTTOM
+
+
+# Convert to factor and reverse the order so the first item plots at the top
+plot_data$Feature <- factor(plot_data$Feature, levels = rev(my_custom_order))
+
+```
+
+
+```{r fig.height=15, fig.width=10}
+
+
+# --- STEP 2: PLOT THE DATA ---
+ggplot(plot_data, aes(x = Weight, y = Feature, fill = Direction)) +
+  
+  # Use geom_col_pattern instead of geom_col
+  geom_col_pattern(
+    aes(pattern = Direction),
+    color = "black",            # Adds a black outline to the bars
+    pattern_fill = "black",     # Color of the pattern (dots/stripes)
+    pattern_density = 0.1,      # How dense the pattern is
+    pattern_spacing = 0.05      # Space between pattern lines/dots
+  ) + 
+  
+  # Set the patterns (circle = dotted, stripe = striped)
+  scale_pattern_manual(values = c("Positive" = "stripe", "Negative" = "circle")) +
+  
+  # Change the base fill to colorblind/B&W friendly grays
+  scale_fill_manual(values = c("Positive" = "gray77", "Negative" = "gray45")) +
+  
+  facet_wrap(~ Class, scales = "free_x") + 
+  theme_minimal() +
+  
+  # --- STEP 3: CONTROL TEXT SIZES ---
+  theme(
+    legend.position = "none",
+    
+    # Global text size baseline
+    text = element_text(size = 12),              
+    
+    # Specific text element controls (adjust numbers as needed)
+    axis.title = element_text(size = 14, face = "bold"), # "Weight" and "Feature"
+    axis.text = element_text(size = 11),                 # The actual numbers/feature names
+    strip.text = element_text(size = 13, face = "bold")  # The facet labels above each panel
+  ) +
+
+  labs(title = "← Negative                         Positive →") +
+  
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 16, face = "bold")
+  )
+```
+
+
+
+#### down here is so whatever.
 
 ```{r}
 # svm_fit <- svm_workflow %>%
@@ -97,17 +260,17 @@ svm_workflow <- workflow() %>%
 ```
 
 ```{r}
-set.seed(222)
-svm_cv <- svm_workflow %>% 
-  fit_resamples(
-    LPhon ~ .,
-    resamples = vfold_cv(svmData, v = 10), 
-    control = control_resamples(save_pred = TRUE, event_level = 'second'),
-    metrics = metric_set(accuracy)
-  )
-
-svm_cv %>% 
-  collect_metrics()
+# set.seed(222)
+# svm_cv <- svm_workflow %>% 
+#   fit_resamples(
+#     LPhon ~ .,
+#     resamples = vfold_cv(svmData, v = 10), 
+#     control = control_resamples(save_pred = TRUE, event_level = 'second'),
+#     metrics = metric_set(accuracy, f_meas)
+#   )
+# 
+# svm_cv %>% 
+#   collect_metrics()
 
 # CV acc was 0.7246105 without V1-V4,
 # ....and 0.7237493 with it??? how!! boo.
@@ -120,5 +283,23 @@ svm_cv %>%
 # on language task: 80.9% w/o PCs, ... 83.1% with them. that's.... something??
 
 # Lphon prediction is 61.7% with PCs, 62% without. damn!!
+
+```
+
+```{r}
+# # From https://www.geeksforgeeks.org/machine-learning/variable-importance-for-support-vector-machine-and-naive-bayes-classifiers-in-r/
+# library(e1071)
+# library(caret)
+# svm_model <- svm(phonation ~ ., data = svmData, kernel = "linear")
+# 
+# # Extract the coefficients
+# coefficients <- t(svm_model$coefs) %*% svm_model$SV
+# importance <- abs(coefficients)
+# importance <- importance / max(importance)
+# importance
+# # importance_df <- data.frame(Variable = colnames(svmData)[-12], Importance = importance)
+# # importance_df <- importance_df[order(importance_df$Importance, decreasing = TRUE), ]
+# 
+# # print(importance_df)
 ```
 
