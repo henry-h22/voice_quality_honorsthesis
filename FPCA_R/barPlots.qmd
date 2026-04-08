@@ -43,10 +43,15 @@ This is just trying to get the same stuff as the JJ paper. We are seeing very si
 ```{r}
 all_data %>% 
   # filter(language == "Yi" | language == "Bo" | language == "Luchun") %>%
-  ggplot(aes(x = phonation, y = PC1)) +
+  ggplot(aes(x = phonation, y = PC4)) +
   stat_summary(fun = "mean", geom = "bar", fill = "skyblue", color = "black") +
   geom_hline(yintercept = 0) +
   stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), geom = "errorbar", width = 0.2)
+
+all_data %>% 
+  ggplot(aes(x = PC2, y = Phonation, color = Phonation)) +
+  geom_boxplot() +
+  facet_wrap(~language)
 ```
 
 ```{r}
@@ -121,5 +126,15 @@ all_data %>%
 
 
 
+```{r}
+all_data %>% 
+  group_by(language) %>% 
+  count() %>% 
+  mutate(perc = n / 4405)
+```
+
+```{r}
+572 +196			+1178		+	1164		+	1295
+```
 
 

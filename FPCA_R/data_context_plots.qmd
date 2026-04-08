@@ -1,0 +1,66 @@
+---
+title: "stuff"
+format: html
+---
+
+ALL I DO IS MAKE QUARTO DOCUMENTS
+
+```{r}
+library(tidyverse)
+alllll <- read.csv("voiceSauce.csv", header = TRUE, check.names = FALSE)
+```
+
+```{r}
+knitr::opts_chunk$set(dev = "png",
+                      dpi = 600,
+                      fig.width=14,
+                      fig.height =22,
+                      echo = TRUE,
+                      cache = TRUE)
+
+all_data %>% 
+  mutate(Language = language) %>% 
+  ggplot(aes(x = Phonation, fill = Phonation)) +
+  geom_bar() +
+  guides(fill="none")
+
+alllll %>% 
+  mutate(Language = language) %>% 
+  mutate(Phonation = phonation) %>% 
+  ggplot(aes(x = Phonation, fill = Phonation)) +
+  geom_bar() +
+  guides(fill="none")
+```
+
+
+```{r}
+knitr::opts_chunk$set(dev = "png",
+                      dpi = 600,
+                      fig.width=14,
+                      fig.height =22,
+                      echo = TRUE,
+                      cache = TRUE)
+
+all_data <- all_data %>% 
+  # mutate(CQ = CQ_H) %>% 
+  mutate(Phonation = phonation)
+
+plottydata %>% 
+  ggplot(aes(y = CQ, x = Phonation)) +
+  geom_boxplot()
+
+plottydata %>% 
+  ggplot(aes(x = CQ, y = Phonation, color = Phonation)) +
+  geom_boxplot() +
+  facet_wrap(~language)
+
+plottydata %>% 
+  ggplot(aes(y = SQ, x = Phonation)) +
+  geom_boxplot()
+
+plottydata %>% 
+  ggplot(aes(x = SQ, y = Phonation, color = Phonation)) +
+  geom_boxplot() +
+  facet_wrap(~language)
+```
+
