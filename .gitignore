@@ -222,3 +222,4 @@ __marimo__/
 .DS_Store
 /FPCA_R/by_phon
 FPCA_R/.RDataTmp
+FPCA_R/voiceSauce.csv
