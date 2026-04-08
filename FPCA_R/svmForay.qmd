@@ -39,18 +39,18 @@ svmData <- all_data %>%
   #   "Tense" ~ "CreakyTense",
   #   "Creaky" ~ "CreakyTense"
   # ))) %>%
-  mutate(phonation = as.factor(case_match(
-    phonation,
-    "Modal" ~ "Modal",
-    .default = "Nonmodal"
-  ))) %>%
+  # mutate(phonation = as.factor(case_match( # 2-class
+  #   phonation,
+  #   "Modal" ~ "Modal",
+  #   .default = "Nonmodal"
+  # ))) %>%
   mutate(phonation = as.factor(phonation)) %>% 
   mutate(language = as.factor(language)) %>% 
   mutate(language = as.factor(LPhon)) %>% 
   mutate(tone = as.factor(tone)) %>% 
   # dplyr::select(-token_id, -LPhon, -tone_misc) %>% 
   dplyr::select(-token_id, -tone_misc) %>% 
-  dplyr::select(phonation, CQ_H, SQ, SQ2_SQ1, SQ4_SQ3, peak_Vel, min_Vel, H1H2c, H2H4c, H1A1c, H1A2c, H1A3c, strF0, CPP, Energy, PC1:PC4) %>% # dplyr::select(-PC1, -PC2, -PC3, -PC4) %>% 
+  dplyr::select(phonation, CQ_H, SQ, SQ2_SQ1, SQ4_SQ3, peak_Vel, min_Vel, H1H2c, H2H4c, H1A1c, H1A2c, H1A3c, strF0, CPP, Energy, PC1:PC4) %>%  dplyr::select(-PC1, -PC2, -PC3, -PC4) %>% 
   drop_na()
 
 
@@ -66,6 +66,7 @@ folds <- vfold_cv(svmData, v = 5)
 #   set_mode("classification") %>%
 #   set_engine("kernlab")
 
+# this is to check no information rate:
 svmData %>%
   group_by(phonation) %>%
   summarise(count = n()) %>%
