@@ -64,3 +64,15 @@ plottydata %>%
   facet_wrap(~language)
 ```
 
+
+
+# this is me being an idiot:
+
+
+```{r}
+all_data %>% 
+  ggplot(aes(x = peak_Vel, y = H1c)) +
+  geom_point() +
+  geom_smooth(method = "lm")
+```
+

@@ -138,3 +138,18 @@ all_data %>%
 ```
 
 
+```{r}
+all_data %>% 
+  group_by(language, tone) %>% 
+  count()
+
+all_data %>% 
+  group_by(language, phonation) %>% 
+  count()
+
+all_data %>% 
+  group_by(language_variety, phonation) %>% 
+  count()
+```
+
+
