@@ -9,18 +9,18 @@ warnings.filterwarnings("ignore")
 all_data = pd.read_csv("voiceSauce.csv")
 TIMEPOINT = 5 # hey Hmong wants 5 but some languages may be better off with 4? unsure
 
-skips = 0
+shape_skips, threshold_skips = 0, 0
 egg_signals = []
 egg_ids = []
 newVoiceSauceDataFrame = []
 VERBOSE = True
-language = 'Hmong'
-phonation = 'CreakyTense'
-phonList = ['Creaky', 'Tense']
+# language = 'Hmong'
+# phonation = 'CreakyTense'
+# phonList = ['Creaky', 'Tense']
 
 for _, row in all_data.iterrows():
     # if row['language'] != language: continue
-    if row['phonation'] not in phonList: continue
+    # if row['phonation'] not in phonList: continue
 
     try:
         egg, samplerate = loadFile(row, TIMEPOINT)
@@ -32,10 +32,10 @@ for _, row in all_data.iterrows():
         continue
 
     if len(egg) < 1000:
-        skips += 10000
+        # skips += 10000
         continue
 
-    egg = lowpass(egg, samplerate, 722)
+    egg = lowpass(egg, samplerate, 900)
     peaks = pitchmark(egg, samplerate, row.strF0)
     threshold = find_threshold(egg, peaks)
 
@@ -43,7 +43,7 @@ for _, row in all_data.iterrows():
         clipped_egg = clip_egg(egg, threshold, peaks)
         doubleThreshold = False
     except ValueError:
-        skips += 1
+        threshold_skips += 1
         if VERBOSE: print(f'File {filepath(row)} chose too low of a threshold. Womp!')
         continue
     except Exception:
@@ -54,7 +54,7 @@ for _, row in all_data.iterrows():
     final = normalize_egg(clipped_egg)
 
     if final[92] > 0.5 or final[550] > 0.75:
-        skips += 1
+        shape_skips += 1
         if VERBOSE: print(f'AHHHHHH {filepath(row)}')
         continue
 
@@ -65,8 +65,8 @@ for _, row in all_data.iterrows():
     newVoiceSauceDataFrame.append(row)
     # plt.plot(final)
 
-print(skips)
-exportToFDA(egg_signals, egg_ids, newVoiceSauceDataFrame, language = phonation)
+print(f'Skipped {threshold_skips} for threshold reasons and {shape_skips} for shape reasons')
+exportToFDA(egg_signals, egg_ids, newVoiceSauceDataFrame)
 # plt.show()
 
 
@@ -84,3 +84,7 @@ exportToFDA(egg_signals, egg_ids, newVoiceSauceDataFrame, language = phonation)
 # TODO: Hmong fixes:
 # We have Hmong stuff now! Exciting! Apparently 88 of the Hmong files have skips, turn Verbose on to check
 # also 96 of them end up too short?? unsure what thats about, could look into it
+
+# Final experiment on lowpass cutoff:
+# 522 Hz had 162 threshold skips and 135 shape skips
+# 722 Hz had 106 threshold skips and 119 shape skips
