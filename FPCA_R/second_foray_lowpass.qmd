@@ -11,6 +11,7 @@ Decompose this into R scripts, only using qmd for visualizations! Please!!
 #| include: false
 library(tidyverse)
 library(fda)
+library(svglite)
 ```
 
 ```{r}
@@ -36,13 +37,24 @@ pca_results <- pca.fd(functional_data_pulses, nharm = 200)
 
 
 ```{r}
+# svglite("all_pulses.svgz", width = 4, height = 2)
 plot(functional_data_pulses)
+# dev.off()
 ```
 
 ```{r}
 # plot.pca.fd(pca_results, harm = seq(1:10))
 plot.pca.fd(pca_results, harm = seq(1:4))
 ```
+
+```{r}
+# This cell is to save vector versions of the fpcs!
+
+svglite("fpc_4.svg", width = 8, height = 5)
+plot.pca.fd(pca_results, harm = 4)
+dev.off()
+```
+
 
 ```{r}
 scores <- as.data.frame(pca_results$scores) %>%
