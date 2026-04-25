@@ -18,18 +18,6 @@ library(ggpattern)
 ```
 
 ```{r}
-all_data %>%
-  ggplot(aes(x = V1)) +
-  geom_density()
-
-all_data %>% 
-  filter(V1 > 0.2, language == "Hmong")
-```
-
-
-
-
-```{r}
 svmData <- all_data %>% 
   # mutate(phonation = as.factor(case_match( # 3-class
   #   phonation,
@@ -96,11 +84,18 @@ svm_workflow <- workflow() %>%
 cv_results <- fit_resamples(
   svm_workflow,
   resamples = folds,
-  metrics = metric_set(accuracy, f_meas) # Requesting only accuracy
+  metrics = metric_set(accuracy, f_meas),
+  control = control_resamples(save_pred = TRUE)
 )
 
 cv_metrics <- collect_metrics(cv_results)
 print(cv_metrics)
+
+avg_cm <- conf_mat_resampled(cv_results, tidy = FALSE)
+autoplot(avg_cm, type = "heatmap") +
+  scale_fill_gradient(low = "#fccf90", high = "#cc8016") +
+  theme_minimal() +
+  theme(legend.position = "none")
 ```
 
 
