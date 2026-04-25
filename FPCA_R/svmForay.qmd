@@ -15,6 +15,7 @@ library(vip)
 library(LiblineaR)
 library(ggplot2)
 library(ggpattern)
+library(scales)
 ```
 
 ```{r}
@@ -170,11 +171,8 @@ plot_data$Feature <- factor(plot_data$Feature, levels = rev(my_custom_order))
 ```
 
 
-```{r fig.height=15, fig.width=10}
-
-
-# --- STEP 2: PLOT THE DATA ---
-ggplot(plot_data, aes(x = Weight, y = Feature, fill = Direction)) +
+```{r fig.height=12, fig.width=9.5}
+weightsPlot <- ggplot(plot_data, aes(x = Weight, y = Feature, fill = Direction)) +
   
   # Use geom_col_pattern instead of geom_col
   geom_col_pattern(
@@ -189,17 +187,18 @@ ggplot(plot_data, aes(x = Weight, y = Feature, fill = Direction)) +
   scale_pattern_manual(values = c("Positive" = "stripe", "Negative" = "circle")) +
   
   # Change the base fill to colorblind/B&W friendly grays
-  scale_fill_manual(values = c("Positive" = "gray77", "Negative" = "gray45")) +
+  scale_fill_manual(values = c("Positive" = "#6164FF", "Negative" = "#FF6F40")) +
+  
+  scale_x_continuous(breaks = scales::breaks_width(0.1)) +
   
   facet_wrap(~ Class, scales = "free_x") + 
   theme_minimal() +
   
-  # --- STEP 3: CONTROL TEXT SIZES ---
   theme(
     legend.position = "none",
     
     # Global text size baseline
-    text = element_text(size = 12),              
+    text = element_text(size = 10),              
     
     # Specific text element controls (adjust numbers as needed)
     axis.title = element_text(size = 14, face = "bold"), # "Weight" and "Feature"
@@ -207,12 +206,25 @@ ggplot(plot_data, aes(x = Weight, y = Feature, fill = Direction)) +
     strip.text = element_text(size = 13, face = "bold")  # The facet labels above each panel
   ) +
 
-  labs(title = "← Negative                         Positive →") +
+  labs(title = "← Negative               \t \t                       Positive →") +
   
   theme(
     plot.title = element_text(hjust = 0.5, size = 16, face = "bold")
   )
+
+weightsPlot
 ```
+
+
+
+This cell saves the weights plot!
+```{r}
+ggsave("svgs/svmAGNOSTICweights.svg", plot = weightsPlot, width = 9.5, height = 12, units = "in", dpi = 600)
+```
+
+
+
+
 
 
 
