@@ -11,6 +11,54 @@ library(tidyverse)
 library(tidymodels)
 ```
 
+# These plots made it into the paper!
+
+```{r}
+CQ_phonation <- all_data %>% 
+  ggplot(aes(x = CQ, y = Phonation, color = Phonation)) +
+  geom_boxplot() +
+  facet_wrap(~language) +
+  theme(legend.position="none") +
+  theme(axis.title.y = element_text(margin = margin(t = 0, r = 20, b = 0, l = 0)))
+
+CQ_phonation
+```
+
+
+```{r}
+SQ_phonation <- all_data %>% 
+  ggplot(aes(x = SQ, y = Phonation, color = Phonation)) +
+  geom_boxplot() +
+  facet_wrap(~language) +
+  theme(legend.position="none") +
+  theme(axis.title.y = element_text(margin = margin(t = 0, r = 20, b = 0, l = 0)))
+
+SQ_phonation
+```
+
+```{r}
+PC1_phonation <- all_data %>% 
+  ggplot(aes(x = PC1, y = Phonation, color = Phonation)) +
+  geom_boxplot() +
+  facet_wrap(~language) +
+  theme(legend.position="none") +
+  theme(axis.title.y = element_text(margin = margin(t = 0, r = 20, b = 0, l = 0)))
+
+PC1_phonation
+```
+
+## This cell saves those!
+```{r}
+ggsave("svgs/cq_phonation.svg", plot = CQ_phonation, width = 12/1.5, height = 8/1.5, units = "in", dpi = 600)
+
+ggsave("svgs/sq_phonation.svg", plot = SQ_phonation, width = 12/1.5, height = 8/1.5, units = "in", dpi = 600)
+
+ggsave("svgs/pc1_phonation.svg", plot = PC1_phonation, width = 12/1.5, height = 8/1.5, units = "in", dpi = 600)
+```
+
+
+# These were just for poking around
+
 ```{r}
 all_data %>% 
   ggplot(aes(x = language)) +
