@@ -15,6 +15,7 @@ library(tidymodels)
 
 ```{r}
 CQ_phonation <- all_data %>% 
+  mutate(Phonation = factor(all_data$phonation, levels = c("Creaky", "Tense", "Modal", "Lax", "Breathy"))) %>% 
   ggplot(aes(x = CQ, y = Phonation, color = Phonation)) +
   geom_boxplot() +
   facet_wrap(~language) +
@@ -27,6 +28,7 @@ CQ_phonation
 
 ```{r}
 SQ_phonation <- all_data %>% 
+    mutate(Phonation = factor(all_data$phonation, levels = c("Creaky", "Tense", "Modal", "Lax", "Breathy"))) %>% 
   ggplot(aes(x = SQ, y = Phonation, color = Phonation)) +
   geom_boxplot() +
   facet_wrap(~language) +
@@ -38,6 +40,7 @@ SQ_phonation
 
 ```{r}
 PC1_phonation <- all_data %>% 
+    mutate(Phonation = factor(all_data$phonation, levels = c("Creaky", "Tense", "Modal", "Lax", "Breathy"))) %>% 
   ggplot(aes(x = PC1, y = Phonation, color = Phonation)) +
   geom_boxplot() +
   facet_wrap(~language) +

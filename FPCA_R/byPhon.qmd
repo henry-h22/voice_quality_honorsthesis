@@ -11,7 +11,7 @@ library(fda)
 ```
 
 ```{r}
-pulsesCreaky <- read.csv("by_phon/Modal_egg_pulses.csv", header = TRUE, check.names = FALSE)
+pulsesCreaky <- read.csv("by_phon/CreakyTense_egg_pulses.csv", header = TRUE, check.names = FALSE)
 pulses_matrixCreaky <- as.matrix(pulsesCreaky)
 idsCreaky <- colnames(pulses_matrixCreaky)
 
@@ -39,6 +39,20 @@ plot(functional_data_pulsesCreaky)
 # plot.pca.fd(pca_results, harm = seq(1:10))
 plot.pca.fd(pca_resultsCreaky, harm = seq(1:4))
 ```
+
+
+```{r}
+# This cell is to save vector versions of the fpcs!
+
+svglite("creakytense_fpc_4.svg", width = 8, height = 5)
+op <- par(cex = 1.022, family = "times")
+plot.pca.fd(pca_resultsCreaky, harm = 4,
+            xaxp = c(0.0, 1.0, 4), yaxp = c(0.0, 1.0, 2),
+            cex.main = 1.7, cex.lab = 1.22, cex.axis = 1)
+dev.off()
+```
+
+
 
 ```{r}
 scoresCreaky <- as.data.frame(pca_resultsCreaky$scores) %>%
