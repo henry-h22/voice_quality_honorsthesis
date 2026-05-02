@@ -11,7 +11,7 @@ library(fda)
 ```
 
 ```{r}
-pulsesByLang <- read.csv("by_lang/jjSourcePaper_egg_pulses.csv", header = TRUE, check.names = FALSE)
+pulsesByLang <- read.csv("by_lang/Gujarati_egg_pulses.csv", header = TRUE, check.names = FALSE)
 pulses_matrixByLang <- as.matrix(pulsesByLang)
 idsByLang <- colnames(pulses_matrixByLang)
 
