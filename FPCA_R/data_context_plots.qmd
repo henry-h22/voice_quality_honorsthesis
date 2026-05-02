@@ -65,6 +65,22 @@ plottydata %>%
 ```
 
 
+```{r}
+# checking what "tone height" means again
+
+all_data %>% 
+  group_by(tone, tone_contour) %>% 
+  count()
+
+all_data %>% 
+  group_by(tone, tone_contour, language_specific_tone, language) %>% 
+  count()
+
+all_data %>% 
+  group_by(tone, tone_contour, language_specific_tone, tone_misc, language) %>% 
+  count()
+```
+
 
 # this is me being an idiot:
 
